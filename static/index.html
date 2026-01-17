@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vocabulary Trainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <div class="badge">SRS-lite</div>
+        <div>
+          <h1>Vocabulary Trainer</h1>
+          <p>Build a personal lexicon with a calm daily review rhythm.</p>
+        </div>
+      </div>
+      <nav class="nav-tabs" aria-label="Primary">
+        <button class="tab is-active" data-section="words" type="button">Words</button>
+        <button class="tab" data-section="review" type="button">Review Today</button>
+        <button class="tab" data-section="stats" type="button">Stats</button>
+      </nav>
+    </header>
+
+    <main class="content">
+      <section id="words" class="section is-active">
+        <div class="section-head">
+          <div>
+            <h2>Words</h2>
+            <p>Collect terms, examples, and tags. Edit any row with one click.</p>
+          </div>
+          <div class="section-actions">
+            <button class="ghost" id="refresh-words" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card" style="--delay: 0.05s;">
+            <div class="card-head">
+              <h3 id="form-title">Add a word</h3>
+              <p>New entries start at stage 0 and are due today.</p>
+            </div>
+            <form id="word-form" class="form">
+              <label>
+                <span>Term</span>
+                <input name="term" id="term" type="text" placeholder="bonjour" required />
+              </label>
+              <label>
+                <span>Translation</span>
+                <input name="translation" id="translation" type="text" placeholder="hello" required />
+              </label>
+              <label>
+                <span>Example</span>
+                <textarea name="example" id="example" placeholder="Bonjour, comment ca va?"></textarea>
+              </label>
+              <label>
+                <span>Tags</span>
+                <input name="tags" id="tags" type="text" placeholder="travel, greetings" />
+              </label>
+              <div class="form-actions">
+                <button class="primary" type="submit" id="save-word">Add word</button>
+                <button class="ghost" type="button" id="cancel-edit" hidden>Cancel</button>
+              </div>
+              <div class="status" id="form-status" role="status"></div>
+            </form>
+          </div>
+
+          <div class="card" style="--delay: 0.1s;">
+            <div class="card-head">
+              <h3>Search and filter</h3>
+              <p>Search by term or translation, filter by a single tag.</p>
+            </div>
+            <div class="form">
+              <label>
+                <span>Search</span>
+                <input id="search-input" type="search" placeholder="type to search" />
+              </label>
+              <label>
+                <span>Tag</span>
+                <input id="tag-filter" type="text" placeholder="food" />
+              </label>
+              <div class="status" id="search-status" role="status"></div>
+            </div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.15s;">
+            <div class="card-head">
+              <h3>Word list</h3>
+              <p>Track stage and next review date per word.</p>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Term</th>
+                    <th>Translation</th>
+                    <th>Example</th>
+                    <th>Tags</th>
+                    <th>Stage</th>
+                    <th>Next review</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="words-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="review" class="section">
+        <div class="section-head">
+          <div>
+            <h2>Review Today</h2>
+            <p>Reveal translation, answer, and move on to the next card.</p>
+          </div>
+          <div class="section-actions">
+            <button class="ghost" id="refresh-review" type="button">Load batch</button>
+          </div>
+        </div>
+
+        <div class="review-layout">
+          <div class="card review-card" style="--delay: 0.05s;">
+            <div class="review-meta" id="review-meta">Ready for a new batch.</div>
+            <div class="review-term" id="review-term">Start a session</div>
+            <div class="review-translation" id="review-translation" hidden></div>
+            <div class="review-actions">
+              <button class="primary" id="show-translation" type="button">Show translation</button>
+              <button class="good" id="mark-good" type="button" disabled>Know it</button>
+              <button class="bad" id="mark-bad" type="button" disabled>Still learning</button>
+            </div>
+            <div class="status" id="review-status" role="status"></div>
+          </div>
+
+          <div class="card review-guide" style="--delay: 0.1s;">
+            <h3>How it works</h3>
+            <ul>
+              <li>Stage 0 goes back tomorrow.</li>
+              <li>Each success increases the interval.</li>
+              <li>Failures reset the stage to 0.</li>
+            </ul>
+            <div class="review-queue" id="review-queue"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="stats" class="section">
+        <div class="section-head">
+          <div>
+            <h2>Stats</h2>
+            <p>Daily activity and the next wave of due words.</p>
+          </div>
+          <div class="section-actions">
+            <button class="ghost" id="refresh-stats" type="button">Refresh</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card" style="--delay: 0.05s;">
+            <h3>Due today</h3>
+            <div class="stat-value" id="stat-due-today">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.1s;">
+            <h3>Reviewed today</h3>
+            <div class="stat-value" id="stat-reviewed-today">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.15s;">
+            <h3>New words (7d)</h3>
+            <div class="stat-value" id="stat-new-7d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.2s;">
+            <h3>Due in 7d</h3>
+            <div class="stat-value" id="stat-due-7d">0</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>FastAPI + SQLite + Vanilla JS. Built for daily focus.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
