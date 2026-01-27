@@ -140,6 +140,205 @@
   width: min(320px, 58vw);
 }
 
+.chart-card .card-head-row {
+  align-items: center;
+}
+
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-controls .is-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.chart-wrap {
+  position: relative;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+}
+
+.chart-wrap canvas {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-item::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-words::before {
+  background: #ff6b35;
+}
+
+.legend-reviews::before {
+  background: #3fb8a6;
+}
+
+.chart-tooltip {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  background: rgba(15, 31, 36, 0.9);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: pre-line;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.chart-tooltip[data-visible="true"] {
+  opacity: 1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.2), transparent 50%),
+    radial-gradient(circle at 80% 10%, rgba(63, 184, 166, 0.2), transparent 45%),
+    linear-gradient(120deg, rgba(247, 242, 234, 0.95), rgba(240, 237, 228, 0.98));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 30;
+}
+
+.auth-screen.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.auth-card {
+  width: min(520px, 92vw);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+  animation: card-rise 0.5s ease forwards;
+}
+
+.auth-header h2 {
+  margin: 10px 0 6px;
+}
+
+.auth-header p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.auth-panel {
+  display: none;
+}
+
+.auth-panel.is-active {
+  display: block;
+  animation: fade-rise 0.35s ease;
+}
+
+.auth-mode main,
+.auth-mode .site-header,
+.auth-mode .site-footer {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.drag-preview {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: translate(-50%, -50%) rotate(-1deg);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 20;
+}
+
+.modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 31, 36, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 90vw);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .form {
   display: grid;
   gap: 12px;
@@ -216,6 +415,12 @@ button:disabled {
   min-height: 18px;
   font-size: 13px;
   color: var(--accent-dark);
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
 .table-wrap {

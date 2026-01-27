@@ -21,6 +21,9 @@
           <p>Build a personal lexicon with a calm daily review rhythm.</p>
         </div>
       </div>
+      <div class="header-actions">
+        <button class="ghost" id="logout-button" type="button">Log out</button>
+      </div>
       <nav class="nav-tabs" aria-label="Primary">
         <button class="tab is-active" data-section="words" type="button">Words</button>
         <button class="tab" data-section="review" type="button">Review Today</button>
@@ -96,6 +99,30 @@
                 <input id="tag-filter" type="text" placeholder="food" />
               </label>
               <div class="status" id="search-status" role="status"></div>
+            </div>
+          </div>
+
+          <div class="card" style="--delay: 0.12s;" data-card-id="import-export">
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Import / export</h3>
+                  <p>Download your word list or bring one back in.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
+            </div>
+            <div class="form">
+              <label>
+                <span>CSV file</span>
+                <input id="import-file" type="file" accept=".csv,text/csv" />
+              </label>
+              <div class="form-actions">
+                <button class="primary" id="import-csv" type="button">Import CSV</button>
+                <button class="ghost" id="export-csv" type="button">Export CSV</button>
+              </div>
+              <div class="status" id="import-status" role="status"></div>
+              <p class="hint">Columns: term, translation, example, tags, stage, next_review, created_at</p>
             </div>
           </div>
 
@@ -186,22 +213,71 @@
             <button class="ghost" id="refresh-stats" type="button">Refresh</button>
           </div>
         </div>
+        <div class="card chart-card" style="--delay: 0.02s;">
+          <div class="card-head">
+            <div class="card-head-row">
+              <div>
+                <h3>Activity chart</h3>
+                <p>Compare new words vs reviews across time.</p>
+              </div>
+              <div class="chart-controls">
+                <button class="ghost" data-stats-range="1d" type="button">Day</button>
+                <button class="ghost" data-stats-range="7d" type="button">Week</button>
+                <button class="ghost" data-stats-range="30d" type="button">Month</button>
+                <button class="ghost" data-stats-range="365d" type="button">Year</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="stats-chart" height="220" aria-label="Stats chart"></canvas>
+            <div class="chart-legend">
+              <span class="legend-item legend-words">New words</span>
+              <span class="legend-item legend-reviews">Reviews</span>
+            </div>
+            <div class="chart-tooltip" id="stats-tooltip" data-visible="false"></div>
+          </div>
+          <div class="status" id="stats-chart-status" role="status"></div>
+        </div>
         <div class="stats-grid">
           <div class="stat-card" style="--delay: 0.05s;">
             <h3>Due today</h3>
             <div class="stat-value" id="stat-due-today">0</div>
           </div>
           <div class="stat-card" style="--delay: 0.1s;">
-            <h3>Reviewed today</h3>
-            <div class="stat-value" id="stat-reviewed-today">0</div>
+            <h3>Due in 7d</h3>
+            <div class="stat-value" id="stat-due-7d">0</div>
           </div>
           <div class="stat-card" style="--delay: 0.15s;">
+            <h3>New words (1d)</h3>
+            <div class="stat-value" id="stat-new-1d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.2s;">
             <h3>New words (7d)</h3>
             <div class="stat-value" id="stat-new-7d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.2s;">
-            <h3>Due in 7d</h3>
-            <div class="stat-value" id="stat-due-7d">0</div>
+          <div class="stat-card" style="--delay: 0.25s;">
+            <h3>New words (30d)</h3>
+            <div class="stat-value" id="stat-new-30d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.3s;">
+            <h3>New words (365d)</h3>
+            <div class="stat-value" id="stat-new-365d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.35s;">
+            <h3>Reviews (1d)</h3>
+            <div class="stat-value" id="stat-reviews-1d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.4s;">
+            <h3>Reviews (7d)</h3>
+            <div class="stat-value" id="stat-reviews-7d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.45s;">
+            <h3>Reviews (30d)</h3>
+            <div class="stat-value" id="stat-reviews-30d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.5s;">
+            <h3>Reviews (365d)</h3>
+            <div class="stat-value" id="stat-reviews-365d">0</div>
           </div>
         </div>
       </section>
@@ -210,6 +286,75 @@
     <footer class="site-footer">
       <p>FastAPI + SQLite + Vanilla JS. Built for daily focus.</p>
     </footer>
+
+    <section class="auth-screen" id="auth-screen" aria-hidden="true">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="badge">Email only</div>
+          <h2>Welcome back</h2>
+          <p>Sign up or sign in with your email. We will send a verification code.</p>
+        </div>
+        <div class="auth-tabs" role="tablist">
+          <button class="tab is-active" data-auth-tab="login" type="button">Login</button>
+          <button class="tab" data-auth-tab="register" type="button">Register</button>
+          <button class="tab" data-auth-tab="verify" type="button">Verify</button>
+        </div>
+        <div class="auth-panel is-active" data-auth-panel="login">
+          <form class="form" id="login-form">
+            <label>
+              <span>Email</span>
+              <input id="login-email" type="email" placeholder="name@example.com" required />
+            </label>
+            <label>
+              <span>Password</span>
+              <input id="login-password" type="password" placeholder="••••••••" required />
+            </label>
+            <button class="primary" type="submit">Sign in</button>
+            <div class="status" id="login-status" role="status"></div>
+          </form>
+        </div>
+        <div class="auth-panel" data-auth-panel="register">
+          <form class="form" id="register-form">
+            <label>
+              <span>Email</span>
+              <input id="register-email" type="email" placeholder="name@example.com" required />
+            </label>
+            <label>
+              <span>Password</span>
+              <input id="register-password" type="password" placeholder="Create a password" required />
+            </label>
+            <button class="primary" type="submit">Create account</button>
+            <div class="status" id="register-status" role="status"></div>
+          </form>
+        </div>
+        <div class="auth-panel" data-auth-panel="verify">
+          <form class="form" id="verify-form">
+            <label>
+              <span>Email</span>
+              <input id="verify-email" type="email" placeholder="name@example.com" required />
+            </label>
+            <label>
+              <span>Verification code</span>
+              <input id="verify-code" type="text" placeholder="123456" required />
+            </label>
+            <button class="primary" type="submit">Verify email</button>
+            <div class="status" id="verify-status" role="status"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal" id="confirm-modal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-backdrop" data-confirm-cancel></div>
+      <div class="modal-card" role="document">
+        <h3 id="confirm-title">Confirm action</h3>
+        <p id="confirm-message">Are you sure?</p>
+        <div class="modal-actions">
+          <button class="ghost" type="button" data-confirm-cancel>Cancel</button>
+          <button class="primary" type="button" data-confirm-accept>Confirm</button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="/static/app.js"></script>
   </body>

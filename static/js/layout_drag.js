@@ -76,6 +76,10 @@ export function initWordsCardsDragAndDrop() {
   applySavedOrder(container);
 
   let draggingCard = null;
+  let preview = null;
+  const transparentImg = new Image();
+  transparentImg.src =
+    "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
   const handles = container.querySelectorAll(".drag-handle[draggable='true']");
   handles.forEach((handle) => {
@@ -88,6 +92,12 @@ export function initWordsCardsDragAndDrop() {
       // Required for Firefox to initiate drag.
       event.dataTransfer?.setData("text/plain", getCardId(card) || "");
       event.dataTransfer && (event.dataTransfer.effectAllowed = "move");
+      event.dataTransfer?.setDragImage(transparentImg, 0, 0);
+
+      preview = card.cloneNode(true);
+      preview.classList.add("drag-preview");
+      preview.style.width = `${card.offsetWidth}px`;
+      document.body.appendChild(preview);
     });
 
     handle.addEventListener("dragend", () => {
@@ -95,7 +105,17 @@ export function initWordsCardsDragAndDrop() {
       draggingCard = null;
       clearDropTargets(container);
       saveOrder(Array.from(container.querySelectorAll(".card[data-card-id]")));
+      if (preview) {
+        preview.remove();
+        preview = null;
+      }
     });
+  });
+
+  document.addEventListener("dragover", (event) => {
+    if (!preview) return;
+    preview.style.left = `${event.clientX}px`;
+    preview.style.top = `${event.clientY}px`;
   });
 
   container.addEventListener("dragover", (event) => {
