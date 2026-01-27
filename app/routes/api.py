@@ -111,6 +111,24 @@ def build_time_buckets(
         cursor += step
     return buckets
 
+def get_current_user(authorization: Optional[str] = Header(None)) -> User:
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+    subject = decode_access_token(token)
+    if not subject:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    with Session(engine) as session:
+        user = session.exec(
+            select(User).where(func.lower(User.email) == subject.lower())
+        ).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        if not user.is_verified:
+            raise HTTPException(status_code=403, detail="Email not verified")
+        return user
 
 @router.post("/auth/register")
 def register(payload: AuthRegister) -> dict:
@@ -200,26 +218,6 @@ def login(payload: AuthLogin) -> AuthToken:
 @router.get("/auth/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)) -> UserOut:
     return UserOut(id=current_user.id, email=current_user.email, is_verified=True)
-
-
-def get_current_user(authorization: Optional[str] = Header(None)) -> User:
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    scheme, _, token = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not token:
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
-    subject = decode_access_token(token)
-    if not subject:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    with Session(engine) as session:
-        user = session.exec(
-            select(User).where(func.lower(User.email) == subject.lower())
-        ).first()
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        if not user.is_verified:
-            raise HTTPException(status_code=403, detail="Email not verified")
-        return user
 
 
 def claim_legacy_data(session: Session, user_id: int) -> None:
