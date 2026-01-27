@@ -1,0 +1,31 @@
+export function queryElements() {
+  return {
+    tabs: document.querySelectorAll(".tab"),
+    sections: document.querySelectorAll(".section"),
+    wordsBody: document.querySelector("#words-body"),
+    form: document.querySelector("#word-form"),
+    formTitle: document.querySelector("#form-title"),
+    saveWord: document.querySelector("#save-word"),
+    cancelEdit: document.querySelector("#cancel-edit"),
+    formStatus: document.querySelector("#form-status"),
+    searchStatus: document.querySelector("#search-status"),
+    searchInput: document.querySelector("#search-input"),
+    tagFilter: document.querySelector("#tag-filter"),
+    refreshWords: document.querySelector("#refresh-words"),
+    refreshReview: document.querySelector("#refresh-review"),
+    reviewMeta: document.querySelector("#review-meta"),
+    reviewTerm: document.querySelector("#review-term"),
+    reviewTranslation: document.querySelector("#review-translation"),
+    showTranslation: document.querySelector("#show-translation"),
+    markGood: document.querySelector("#mark-good"),
+    markBad: document.querySelector("#mark-bad"),
+    reviewStatus: document.querySelector("#review-status"),
+    reviewQueue: document.querySelector("#review-queue"),
+    statDueToday: document.querySelector("#stat-due-today"),
+    statReviewedToday: document.querySelector("#stat-reviewed-today"),
+    statNew7d: document.querySelector("#stat-new-7d"),
+    statDue7d: document.querySelector("#stat-due-7d"),
+    refreshStats: document.querySelector("#refresh-stats"),
+  };
+}
+

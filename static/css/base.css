@@ -1,0 +1,52 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Source Serif 4", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(63, 184, 166, 0.18), transparent 40%),
+    radial-gradient(circle at 10% 80%, rgba(244, 195, 90, 0.25), transparent 55%),
+    linear-gradient(120deg, #f7f2ea, #f0ede4 35%, #e8f2ee 100%);
+  min-height: 100vh;
+  position: relative;
+  padding: 32px clamp(16px, 4vw, 48px) 40px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(
+      90deg,
+      rgba(15, 31, 36, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(180deg, rgba(15, 31, 36, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3,
+nav,
+button,
+input,
+textarea,
+label,
+table,
+.badge {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+

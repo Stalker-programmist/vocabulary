@@ -29,8 +29,11 @@ API docs: `http://127.0.0.1:8000/docs`
 Stage intervals are fixed: 1, 3, 7, 14, 30 days. Good answers advance the stage, bad answers reset to stage 0.
 
 ## Files
-- `main.py` - FastAPI app and API endpoints
+- `main.py` - FastAPI app (exports `app`)
+- `app/` - backend modules (db/models/routes/services)
 - `static/index.html` - UI layout
-- `static/styles.css` - styling
-- `static/app.js` - client logic
+- `static/styles.css` - CSS entrypoint (imports `static/css/*`)
+- `static/css/` - CSS modules
+- `static/app.js` - JS entrypoint (imports `static/js/*`)
+- `static/js/` - JS modules
 - `ROADMAP.md` - development roadmap
