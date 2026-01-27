@@ -11,6 +11,8 @@ export function queryElements() {
     searchStatus: document.querySelector("#search-status"),
     searchInput: document.querySelector("#search-input"),
     tagFilter: document.querySelector("#tag-filter"),
+    wordlistSearchInput: document.querySelector("#wordlist-search-input"),
+    wordlistClearSearch: document.querySelector("#wordlist-clear-search"),
     refreshWords: document.querySelector("#refresh-words"),
     refreshReview: document.querySelector("#refresh-review"),
     reviewMeta: document.querySelector("#review-meta"),
@@ -28,4 +30,3 @@ export function queryElements() {
     refreshStats: document.querySelector("#refresh-stats"),
   };
 }
-

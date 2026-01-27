@@ -41,10 +41,15 @@
         </div>
 
         <div class="grid">
-          <div class="card" style="--delay: 0.05s;">
+          <div class="card" style="--delay: 0.05s;" data-card-id="add-word">
             <div class="card-head">
-              <h3 id="form-title">Add a word</h3>
-              <p>New entries start at stage 0 and are due today.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3 id="form-title">Add a word</h3>
+                  <p>New entries start at stage 0 and are due today.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
             </div>
             <form id="word-form" class="form">
               <label>
@@ -71,10 +76,15 @@
             </form>
           </div>
 
-          <div class="card" style="--delay: 0.1s;">
+          <div class="card" style="--delay: 0.1s;" data-card-id="search-filter">
             <div class="card-head">
-              <h3>Search and filter</h3>
-              <p>Search by term or translation, filter by a single tag.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3>Search and filter</h3>
+                  <p>Search by term or translation, filter by a single tag.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
             </div>
             <div class="form">
               <label>
@@ -89,10 +99,26 @@
             </div>
           </div>
 
-          <div class="card table-card" style="--delay: 0.15s;">
+          <div class="card table-card" style="--delay: 0.15s;" data-card-id="word-list">
             <div class="card-head">
-              <h3>Word list</h3>
-              <p>Track stage and next review date per word.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3>Word list</h3>
+                  <p>Track stage and next review date per word.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+                <div class="wordlist-tools" role="search">
+                  <input
+                    id="wordlist-search-input"
+                    type="search"
+                    placeholder="Search words..."
+                    autocomplete="off"
+                  />
+                  <button class="ghost" id="wordlist-clear-search" type="button">
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="table-wrap">
               <table>

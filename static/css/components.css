@@ -84,6 +84,62 @@
   color: var(--ink-soft);
 }
 
+.card-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.drag-handle {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(15, 31, 36, 0.06);
+  cursor: grab;
+  position: relative;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle, rgba(15, 31, 36, 0.55) 2px, transparent 3px) 0 0 / 8px 8px;
+  opacity: 0.9;
+}
+
+.card.is-dragging {
+  opacity: 0.75;
+  transform: rotate(-0.6deg) scale(0.99);
+}
+
+.card.is-drop-target {
+  outline: 2px dashed rgba(63, 184, 166, 0.7);
+  outline-offset: 6px;
+}
+
+.wordlist-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wordlist-tools input[type="search"] {
+  width: min(320px, 58vw);
+}
+
 .form {
   display: grid;
   gap: 12px;
@@ -246,4 +302,3 @@ th {
   margin-top: 32px;
   color: var(--ink-soft);
 }
-

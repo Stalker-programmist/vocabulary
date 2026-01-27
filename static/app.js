@@ -1,5 +1,6 @@
 import { apiRequest } from "./js/api.js";
 import { queryElements } from "./js/dom.js";
+import { initWordsCardsDragAndDrop } from "./js/layout_drag.js";
 import { loadReviewQueue, revealTranslation, submitReview } from "./js/review.js";
 import { createState } from "./js/state.js";
 import { loadStats } from "./js/stats.js";
@@ -14,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.body.classList.add("page-loaded");
+  initWordsCardsDragAndDrop();
   resetForm(ctx);
   loadWords(ctx);
   loadReviewQueue(ctx);
@@ -88,7 +90,41 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const runSearch = debounce(() => loadWords(ctx), 300);
-  ctx.elements.searchInput.addEventListener("input", runSearch);
+
+  const syncSearchInputs = (value) => {
+    if (ctx.elements.searchInput && ctx.elements.searchInput.value !== value) {
+      ctx.elements.searchInput.value = value;
+    }
+    if (
+      ctx.elements.wordlistSearchInput &&
+      ctx.elements.wordlistSearchInput.value !== value
+    ) {
+      ctx.elements.wordlistSearchInput.value = value;
+    }
+  };
+
+  if (ctx.elements.searchInput) {
+    ctx.elements.searchInput.addEventListener("input", () => {
+      syncSearchInputs(ctx.elements.searchInput.value);
+      runSearch();
+    });
+  }
+
+  if (ctx.elements.wordlistSearchInput) {
+    ctx.elements.wordlistSearchInput.addEventListener("input", () => {
+      syncSearchInputs(ctx.elements.wordlistSearchInput.value);
+      runSearch();
+    });
+    // Initialize from the existing search input (if any)
+    syncSearchInputs(ctx.elements.searchInput?.value ?? "");
+  }
+
+  if (ctx.elements.wordlistClearSearch) {
+    ctx.elements.wordlistClearSearch.addEventListener("click", async () => {
+      syncSearchInputs("");
+      await loadWords(ctx);
+    });
+  }
+
   ctx.elements.tagFilter.addEventListener("input", runSearch);
 });
-
