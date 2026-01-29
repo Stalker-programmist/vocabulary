@@ -26,6 +26,12 @@
         <button class="tab" data-section="review" type="button">Review Today</button>
         <button class="tab" data-section="stats" type="button">Stats</button>
       </nav>
+      <div class="auth-bar" aria-label="Account">
+        <span class="auth-status" id="auth-status">Not signed in</span>
+        <button class="ghost" id="auth-login-btn" type="button">Log in</button>
+        <button class="primary" id="auth-register-btn" type="button">Sign up</button>
+        <button class="ghost" id="auth-logout-btn" type="button" hidden>Log out</button>
+      </div>
     </header>
 
     <main class="content">
@@ -210,6 +216,31 @@
     <footer class="site-footer">
       <p>FastAPI + SQLite + Vanilla JS. Built for daily focus.</p>
     </footer>
+
+    <div class="modal" id="auth-modal" hidden>
+      <div class="modal-backdrop" id="auth-modal-backdrop"></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="modal-head">
+          <h3 id="auth-title">Sign in</h3>
+          <button class="modal-close" id="auth-modal-close" type="button" aria-label="Close"></button>
+        </div>
+        <form id="auth-form" class="form">
+          <label>
+            <span>Email</span>
+            <input id="auth-email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="auth-password" type="password" autocomplete="current-password" required />
+          </label>
+          <div class="form-actions">
+            <button class="primary" id="auth-submit" type="submit">Sign in</button>
+            <button class="ghost" id="auth-switch-mode" type="button">Create account</button>
+          </div>
+          <div class="status" id="auth-error" role="status"></div>
+        </form>
+      </div>
+    </div>
 
     <script type="module" src="/static/app.js"></script>
   </body>

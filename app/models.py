@@ -6,8 +6,17 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
+class User(SQLModel, table=True):
+    __tablename__ = "users"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(index=True)
+    password_hash: str
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
 class Word(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
     term: str
     translation: str
     example: Optional[str] = None
@@ -23,4 +32,3 @@ class Review(SQLModel, table=True):
     reviewed_at: datetime = Field(default_factory=datetime.now)
     result: bool
     next_review_assigned: date
-

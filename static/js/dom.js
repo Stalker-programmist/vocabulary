@@ -28,5 +28,21 @@ export function queryElements() {
     statNew7d: document.querySelector("#stat-new-7d"),
     statDue7d: document.querySelector("#stat-due-7d"),
     refreshStats: document.querySelector("#refresh-stats"),
+
+    authStatus: document.querySelector("#auth-status"),
+    authLoginBtn: document.querySelector("#auth-login-btn"),
+    authRegisterBtn: document.querySelector("#auth-register-btn"),
+    authLogoutBtn: document.querySelector("#auth-logout-btn"),
+
+    authModal: document.querySelector("#auth-modal"),
+    authBackdrop: document.querySelector("#auth-modal-backdrop"),
+    authClose: document.querySelector("#auth-modal-close"),
+    authTitle: document.querySelector("#auth-title"),
+    authForm: document.querySelector("#auth-form"),
+    authEmail: document.querySelector("#auth-email"),
+    authPassword: document.querySelector("#auth-password"),
+    authSubmit: document.querySelector("#auth-submit"),
+    authSwitchMode: document.querySelector("#auth-switch-mode"),
+    authError: document.querySelector("#auth-error"),
   };
 }

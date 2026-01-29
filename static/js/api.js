@@ -4,6 +4,9 @@ export async function apiRequest(path, options = {}) {
     ...options,
   };
   const response = await fetch(path, settings);
+  if (response.status === 401) {
+    window.dispatchEvent(new CustomEvent("auth:required"));
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || response.statusText);
@@ -13,4 +16,3 @@ export async function apiRequest(path, options = {}) {
   }
   return response.json();
 }
-

@@ -1,4 +1,5 @@
 import { apiRequest } from "./js/api.js";
+import { initAuthUI } from "./js/auth.js";
 import { queryElements } from "./js/dom.js";
 import { initWordsCardsDragAndDrop } from "./js/layout_drag.js";
 import { loadReviewQueue, revealTranslation, submitReview } from "./js/review.js";
@@ -8,14 +9,7 @@ import { switchSection } from "./js/tabs.js";
 import { debounce, setStatus } from "./js/utils.js";
 import { loadWords, resetForm } from "./js/words.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const ctx = {
-    state: createState(),
-    elements: queryElements(),
-  };
-
-  document.body.classList.add("page-loaded");
-  initWordsCardsDragAndDrop();
+function startApp(ctx) {
   resetForm(ctx);
   loadWords(ctx);
   loadReviewQueue(ctx);
@@ -115,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
       syncSearchInputs(ctx.elements.wordlistSearchInput.value);
       runSearch();
     });
-    // Initialize from the existing search input (if any)
     syncSearchInputs(ctx.elements.searchInput?.value ?? "");
   }
 
@@ -127,4 +120,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   ctx.elements.tagFilter.addEventListener("input", runSearch);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const ctx = {
+    state: createState(),
+    elements: queryElements(),
+  };
+
+  document.body.classList.add("page-loaded");
+  initWordsCardsDragAndDrop();
+  let started = false;
+  const authed = await initAuthUI(ctx, {
+    onAuthed: () => {
+      if (started) return;
+      started = true;
+      startApp(ctx);
+    },
+  });
+
+  if (authed && !started) {
+    started = true;
+    startApp(ctx);
+  }
 });
