@@ -50,4 +50,18 @@ def claim_legacy_words_for_user(user_id: int) -> None:
 
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
+<<<<<<< HEAD
     migrate_db()
+=======
+    with engine.begin() as conn:
+        columns = conn.execute(text("PRAGMA table_info(word)")).fetchall()
+        col_names = {row[1] for row in columns}
+        if "user_id" not in col_names:
+            conn.execute(text("ALTER TABLE word ADD COLUMN user_id INTEGER"))
+
+        columns = conn.execute(text("PRAGMA table_info(review)")).fetchall()
+        col_names = {row[1] for row in columns}
+        if "user_id" not in col_names:
+            conn.execute(text("ALTER TABLE review ADD COLUMN user_id INTEGER"))
+
+>>>>>>> dce23febdb3bb8efd7e33cacfdea52a2dd384518
