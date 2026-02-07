@@ -7,7 +7,7 @@ __pycache__/
 
 # C extensions
 *.so
-vocablary.db
+vocabulary.db
 
 # Distribution / packaging
 .Python
