@@ -26,6 +26,12 @@
         <button class="tab" data-section="review" type="button">Review Today</button>
         <button class="tab" data-section="stats" type="button">Stats</button>
       </nav>
+      <div class="auth-bar" aria-label="Account">
+        <span class="auth-status" id="auth-status">Not signed in</span>
+        <button class="ghost" id="auth-login-btn" type="button">Log in</button>
+        <button class="primary" id="auth-register-btn" type="button">Sign up</button>
+        <button class="ghost" id="auth-logout-btn" type="button" hidden>Log out</button>
+      </div>
     </header>
 
     <main class="content">
@@ -41,10 +47,15 @@
         </div>
 
         <div class="grid">
-          <div class="card" style="--delay: 0.05s;">
+          <div class="card" style="--delay: 0.05s;" data-card-id="add-word">
             <div class="card-head">
-              <h3 id="form-title">Add a word</h3>
-              <p>New entries start at stage 0 and are due today.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3 id="form-title">Add a word</h3>
+                  <p>New entries start at stage 0 and are due today.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
             </div>
             <form id="word-form" class="form">
               <label>
@@ -71,10 +82,15 @@
             </form>
           </div>
 
-          <div class="card" style="--delay: 0.1s;">
+          <div class="card" style="--delay: 0.1s;" data-card-id="search-filter">
             <div class="card-head">
-              <h3>Search and filter</h3>
-              <p>Search by term or translation, filter by a single tag.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3>Search and filter</h3>
+                  <p>Search by term or translation, filter by a single tag.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
             </div>
             <div class="form">
               <label>
@@ -89,10 +105,50 @@
             </div>
           </div>
 
-          <div class="card table-card" style="--delay: 0.15s;">
+          <div class="card" style="--delay: 0.12s;" data-card-id="import-export">
             <div class="card-head">
-              <h3>Word list</h3>
-              <p>Track stage and next review date per word.</p>
+              <div class="card-head-row">
+                <div>
+                  <h3>Import / export</h3>
+                  <p>Download your word list or bring one back in.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
+            </div>
+            <div class="form">
+              <label>
+                <span>CSV file</span>
+                <input id="import-file" type="file" accept=".csv,text/csv" />
+              </label>
+              <div class="form-actions">
+                <button class="primary" id="import-csv" type="button">Import CSV</button>
+                <button class="ghost" id="export-csv" type="button">Export CSV</button>
+              </div>
+              <div class="status" id="import-status" role="status"></div>
+              <p class="hint">Columns: term, translation, example, tags, stage, next_review, created_at</p>
+            </div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.15s;" data-card-id="word-list">
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Word list</h3>
+                  <p>Track stage and next review date per word.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+                <div class="wordlist-tools" role="search">
+                  <input
+                    id="wordlist-search-input"
+                    type="search"
+                    placeholder="Search words..."
+                    autocomplete="off"
+                  />
+                  <button class="ghost" id="wordlist-clear-search" type="button">
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="table-wrap">
               <table>
@@ -160,22 +216,71 @@
             <button class="ghost" id="refresh-stats" type="button">Refresh</button>
           </div>
         </div>
+        <div class="card chart-card" style="--delay: 0.02s;">
+          <div class="card-head">
+            <div class="card-head-row">
+              <div>
+                <h3>Activity chart</h3>
+                <p>Compare new words vs reviews across time.</p>
+              </div>
+              <div class="chart-controls">
+                <button class="ghost" data-stats-range="1d" type="button">Day</button>
+                <button class="ghost" data-stats-range="7d" type="button">Week</button>
+                <button class="ghost" data-stats-range="30d" type="button">Month</button>
+                <button class="ghost" data-stats-range="365d" type="button">Year</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="stats-chart" height="220" aria-label="Stats chart"></canvas>
+            <div class="chart-legend">
+              <span class="legend-item legend-words">New words</span>
+              <span class="legend-item legend-reviews">Reviews</span>
+            </div>
+            <div class="chart-tooltip" id="stats-tooltip" data-visible="false"></div>
+          </div>
+          <div class="status" id="stats-chart-status" role="status"></div>
+        </div>
         <div class="stats-grid">
           <div class="stat-card" style="--delay: 0.05s;">
             <h3>Due today</h3>
             <div class="stat-value" id="stat-due-today">0</div>
           </div>
           <div class="stat-card" style="--delay: 0.1s;">
-            <h3>Reviewed today</h3>
-            <div class="stat-value" id="stat-reviewed-today">0</div>
+            <h3>Due in 7d</h3>
+            <div class="stat-value" id="stat-due-7d">0</div>
           </div>
           <div class="stat-card" style="--delay: 0.15s;">
+            <h3>New words (1d)</h3>
+            <div class="stat-value" id="stat-new-1d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.2s;">
             <h3>New words (7d)</h3>
             <div class="stat-value" id="stat-new-7d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.2s;">
-            <h3>Due in 7d</h3>
-            <div class="stat-value" id="stat-due-7d">0</div>
+          <div class="stat-card" style="--delay: 0.25s;">
+            <h3>New words (30d)</h3>
+            <div class="stat-value" id="stat-new-30d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.3s;">
+            <h3>New words (365d)</h3>
+            <div class="stat-value" id="stat-new-365d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.35s;">
+            <h3>Reviews (1d)</h3>
+            <div class="stat-value" id="stat-reviews-1d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.4s;">
+            <h3>Reviews (7d)</h3>
+            <div class="stat-value" id="stat-reviews-7d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.45s;">
+            <h3>Reviews (30d)</h3>
+            <div class="stat-value" id="stat-reviews-30d">0</div>
+          </div>
+          <div class="stat-card" style="--delay: 0.5s;">
+            <h3>Reviews (365d)</h3>
+            <div class="stat-value" id="stat-reviews-365d">0</div>
           </div>
         </div>
       </section>
@@ -185,6 +290,43 @@
       <p>FastAPI + SQLite + Vanilla JS. Built for daily focus.</p>
     </footer>
 
-    <script src="/static/app.js"></script>
+    <div class="modal" id="auth-modal" hidden>
+      <div class="modal-backdrop" id="auth-modal-backdrop"></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="modal-head">
+          <h3 id="auth-title">Sign in</h3>
+          <button class="modal-close" id="auth-modal-close" type="button" aria-label="Close"></button>
+        </div>
+        <form id="auth-form" class="form">
+          <label>
+            <span>Email</span>
+            <input id="auth-email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="auth-password" type="password" autocomplete="current-password" required />
+          </label>
+          <div class="form-actions">
+            <button class="primary" id="auth-submit" type="submit">Sign in</button>
+            <button class="ghost" id="auth-switch-mode" type="button">Create account</button>
+          </div>
+          <div class="status" id="auth-error" role="status"></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="confirm-modal" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal-backdrop" data-confirm-cancel></div>
+      <div class="modal-card" role="document">
+        <h3 id="confirm-title">Confirm action</h3>
+        <p id="confirm-message">Are you sure?</p>
+        <div class="modal-actions">
+          <button class="ghost" type="button" data-confirm-cancel>Cancel</button>
+          <button class="primary" type="button" data-confirm-accept>Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
   </body>
 </html>
