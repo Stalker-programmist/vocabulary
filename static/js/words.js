@@ -1,4 +1,5 @@
 import { apiRequest } from "./api.js";
+import { confirmAction } from "./modal.js";
 import { formatDate, setStatus } from "./utils.js";
 
 export function resetForm({ state, elements }) {
@@ -71,7 +72,8 @@ export function renderWords(ctx, words) {
     deleteBtn.type = "button";
     deleteBtn.textContent = "Delete";
     deleteBtn.addEventListener("click", async () => {
-      if (!confirm("Delete this word?")) return;
+      const ok = await confirmAction(ctx, "Delete this word?");
+      if (!ok) return;
       try {
         await apiRequest(`/api/words/${word.id}`, { method: "DELETE" });
         await loadWords(ctx);
