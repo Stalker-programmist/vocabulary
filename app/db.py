@@ -25,12 +25,22 @@ def migrate_db() -> None:
         if "user" in tables and "users" not in tables:
             conn.exec_driver_sql("ALTER TABLE user RENAME TO users")
 
-        columns = conn.exec_driver_sql("PRAGMA table_info(word)").fetchall()
-        column_names = {row[1] for row in columns}  # row[1] = name
-        if "user_id" not in column_names:
-            conn.exec_driver_sql("ALTER TABLE word ADD COLUMN user_id INTEGER")
+        if "word" in tables:
+            columns = conn.exec_driver_sql("PRAGMA table_info(word)").fetchall()
+            column_names = {row[1] for row in columns}  # row[1] = name
+            if "user_id" not in column_names:
+                conn.exec_driver_sql("ALTER TABLE word ADD COLUMN user_id INTEGER")
             conn.exec_driver_sql(
                 "CREATE INDEX IF NOT EXISTS ix_word_user_id ON word(user_id)"
+            )
+
+        if "review" in tables:
+            columns = conn.exec_driver_sql("PRAGMA table_info(review)").fetchall()
+            column_names = {row[1] for row in columns}
+            if "user_id" not in column_names:
+                conn.exec_driver_sql("ALTER TABLE review ADD COLUMN user_id INTEGER")
+            conn.exec_driver_sql(
+                "CREATE INDEX IF NOT EXISTS ix_review_user_id ON review(user_id)"
             )
 
 
@@ -49,19 +59,5 @@ def claim_legacy_words_for_user(user_id: int) -> None:
 
 
 def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
-<<<<<<< HEAD
     migrate_db()
-=======
-    with engine.begin() as conn:
-        columns = conn.execute(text("PRAGMA table_info(word)")).fetchall()
-        col_names = {row[1] for row in columns}
-        if "user_id" not in col_names:
-            conn.execute(text("ALTER TABLE word ADD COLUMN user_id INTEGER"))
-
-        columns = conn.execute(text("PRAGMA table_info(review)")).fetchall()
-        col_names = {row[1] for row in columns}
-        if "user_id" not in col_names:
-            conn.execute(text("ALTER TABLE review ADD COLUMN user_id INTEGER"))
-
->>>>>>> dce23febdb3bb8efd7e33cacfdea52a2dd384518
+    SQLModel.metadata.create_all(engine)

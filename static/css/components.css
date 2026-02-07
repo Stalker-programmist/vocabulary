@@ -538,6 +538,13 @@ th {
   display: none;
 }
 
+/* Auth modal uses the `hidden` attribute (not `.is-open`), so it must override
+   the base modal defaults defined выше (opacity/pointer-events). */
+#auth-modal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .modal-backdrop {
   position: absolute;
   inset: 0;

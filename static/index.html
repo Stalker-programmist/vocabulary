@@ -21,9 +21,6 @@
           <p>Build a personal lexicon with a calm daily review rhythm.</p>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="ghost" id="logout-button" type="button">Log out</button>
-      </div>
       <nav class="nav-tabs" aria-label="Primary">
         <button class="tab is-active" data-section="words" type="button">Words</button>
         <button class="tab" data-section="review" type="button">Review Today</button>
@@ -293,7 +290,6 @@
       <p>FastAPI + SQLite + Vanilla JS. Built for daily focus.</p>
     </footer>
 
-<<<<<<< HEAD
     <div class="modal" id="auth-modal" hidden>
       <div class="modal-backdrop" id="auth-modal-backdrop"></div>
       <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
@@ -316,63 +312,8 @@
           </div>
           <div class="status" id="auth-error" role="status"></div>
         </form>
-=======
-    <section class="auth-screen" id="auth-screen" aria-hidden="true">
-      <div class="auth-card">
-        <div class="auth-header">
-          <div class="badge">Email only</div>
-          <h2>Welcome back</h2>
-          <p>Sign up or sign in with your email. We will send a verification code.</p>
-        </div>
-        <div class="auth-tabs" role="tablist">
-          <button class="tab is-active" data-auth-tab="login" type="button">Login</button>
-          <button class="tab" data-auth-tab="register" type="button">Register</button>
-          <button class="tab" data-auth-tab="verify" type="button">Verify</button>
-        </div>
-        <div class="auth-panel is-active" data-auth-panel="login">
-          <form class="form" id="login-form">
-            <label>
-              <span>Email</span>
-              <input id="login-email" type="email" placeholder="name@example.com" required />
-            </label>
-            <label>
-              <span>Password</span>
-              <input id="login-password" type="password" placeholder="••••••••" required />
-            </label>
-            <button class="primary" type="submit">Sign in</button>
-            <div class="status" id="login-status" role="status"></div>
-          </form>
-        </div>
-        <div class="auth-panel" data-auth-panel="register">
-          <form class="form" id="register-form">
-            <label>
-              <span>Email</span>
-              <input id="register-email" type="email" placeholder="name@example.com" required />
-            </label>
-            <label>
-              <span>Password</span>
-              <input id="register-password" type="password" placeholder="Create a password" required />
-            </label>
-            <button class="primary" type="submit">Create account</button>
-            <div class="status" id="register-status" role="status"></div>
-          </form>
-        </div>
-        <div class="auth-panel" data-auth-panel="verify">
-          <form class="form" id="verify-form">
-            <label>
-              <span>Email</span>
-              <input id="verify-email" type="email" placeholder="name@example.com" required />
-            </label>
-            <label>
-              <span>Verification code</span>
-              <input id="verify-code" type="text" placeholder="123456" required />
-            </label>
-            <button class="primary" type="submit">Verify email</button>
-            <div class="status" id="verify-status" role="status"></div>
-          </form>
-        </div>
       </div>
-    </section>
+    </div>
 
     <div class="modal" id="confirm-modal" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="modal-backdrop" data-confirm-cancel></div>
@@ -383,7 +324,6 @@
           <button class="ghost" type="button" data-confirm-cancel>Cancel</button>
           <button class="primary" type="button" data-confirm-accept>Confirm</button>
         </div>
->>>>>>> dce23febdb3bb8efd7e33cacfdea52a2dd384518
       </div>
     </div>
 

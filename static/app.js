@@ -1,9 +1,11 @@
+/**
+ * app.js
+ * Главный клиентский bootstrap: инициализация UI, подписка на события,
+ * авторизация и первичная загрузка данных.
+ */
+
 import { apiRequest } from "./js/api.js";
-<<<<<<< HEAD
 import { initAuthUI } from "./js/auth.js";
-=======
-import { initAuth } from "./js/auth.js";
->>>>>>> dce23febdb3bb8efd7e33cacfdea52a2dd384518
 import { queryElements } from "./js/dom.js";
 import { initWordsCardsDragAndDrop } from "./js/layout_drag.js";
 import { initConfirmModal } from "./js/modal.js";
@@ -15,9 +17,6 @@ import { switchSection } from "./js/tabs.js";
 import { debounce, setStatus } from "./js/utils.js";
 import { loadWords, resetForm } from "./js/words.js";
 
-<<<<<<< HEAD
-function startApp(ctx) {
-=======
 function downloadBlob(filename, blob) {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -33,9 +32,9 @@ function parseErrorMessage(text, fallback) {
   if (!text) return fallback;
   try {
     const data = JSON.parse(text);
-    if (data && data.detail) return data.detail;
+    if (data && typeof data.detail === "string") return data.detail;
   } catch {
-    // Not JSON, fall through.
+    // Not JSON.
   }
   return text;
 }
@@ -51,9 +50,11 @@ async function importCsv(ctx) {
   const formData = new FormData();
   formData.append("file", importFile.files[0]);
   setStatus(importStatus, "Importing...");
+
   try {
     const response = await fetch("/api/words/import", {
       method: "POST",
+      credentials: "same-origin",
       body: formData,
     });
     if (!response.ok) {
@@ -66,16 +67,20 @@ async function importCsv(ctx) {
     importFile.value = "";
     await loadWords(ctx);
     await loadStats(ctx);
-  } catch (err) {
-    setStatus(importStatus, err.message || "Import failed");
+  } catch (error) {
+    setStatus(importStatus, error?.message || "Import failed");
   }
 }
 
 async function exportCsv(ctx) {
   const { importStatus } = ctx.elements;
   if (importStatus) setStatus(importStatus, "Preparing export...");
+
   try {
-    const response = await fetch("/api/words/export");
+    const response = await fetch("/api/words/export", {
+      method: "GET",
+      credentials: "same-origin",
+    });
     if (!response.ok) {
       const text = await response.text();
       throw new Error(parseErrorMessage(text, response.statusText));
@@ -84,118 +89,82 @@ async function exportCsv(ctx) {
     let filename = "vocabulary_words.csv";
     const disposition = response.headers.get("Content-Disposition") || "";
     const match = /filename="?([^"]+)"?/.exec(disposition);
-    if (match && match[1]) {
-      filename = match[1];
-    }
+    if (match?.[1]) filename = match[1];
     downloadBlob(filename, blob);
     if (importStatus) setStatus(importStatus, "Export ready.");
-  } catch (err) {
-    if (importStatus) setStatus(importStatus, err.message || "Export failed");
+  } catch (error) {
+    if (importStatus) setStatus(importStatus, error?.message || "Export failed");
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const ctx = {
-    state: createState(),
-    elements: queryElements(),
-  };
+function startApp(ctx) {
+  loadWords(ctx);
+  loadReviewQueue(ctx);
+  loadStats(ctx);
+  initStatsChart(ctx);
+}
 
-  document.body.classList.add("page-loaded");
-  initWordsCardsDragAndDrop();
-  initConfirmModal(ctx);
->>>>>>> dce23febdb3bb8efd7e33cacfdea52a2dd384518
-  resetForm(ctx);
+function bindUI(ctx) {
+  const { elements } = ctx;
 
-  const startApp = () => {
-    loadWords(ctx);
-    loadReviewQueue(ctx);
-    loadStats(ctx);
-    initStatsChart(ctx);
-  };
-
-  initAuth(ctx, startApp);
-
-  ctx.elements.tabs.forEach((tab) => {
+  elements.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       switchSection(ctx, tab.dataset.section);
     });
   });
 
-  ctx.elements.form.addEventListener("submit", async (event) => {
+  elements.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = {
-      term: ctx.elements.form.term.value.trim(),
-      translation: ctx.elements.form.translation.value.trim(),
-      example: ctx.elements.form.example.value.trim(),
-      tags: ctx.elements.form.tags.value.trim(),
+      term: elements.form.term.value.trim(),
+      translation: elements.form.translation.value.trim(),
+      example: elements.form.example.value.trim(),
+      tags: elements.form.tags.value.trim(),
     };
+
     try {
       if (ctx.state.editingId) {
         await apiRequest(`/api/words/${ctx.state.editingId}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
-        setStatus(ctx.elements.formStatus, "Saved.");
+        setStatus(elements.formStatus, "Saved.");
       } else {
         await apiRequest("/api/words", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        setStatus(ctx.elements.formStatus, "Added.");
+        setStatus(elements.formStatus, "Added.");
       }
+
       resetForm(ctx);
       await loadWords(ctx);
       await loadStats(ctx);
-    } catch (err) {
-      setStatus(ctx.elements.formStatus, err.message || "Save failed");
+    } catch (error) {
+      setStatus(elements.formStatus, error?.message || "Save failed");
     }
   });
 
-  ctx.elements.cancelEdit.addEventListener("click", () => {
-    resetForm(ctx);
-  });
+  elements.cancelEdit.addEventListener("click", () => resetForm(ctx));
+  elements.refreshWords.addEventListener("click", () => loadWords(ctx));
+  elements.refreshReview.addEventListener("click", () => loadReviewQueue(ctx));
+  elements.refreshStats.addEventListener("click", () => loadStats(ctx));
 
-  ctx.elements.refreshWords.addEventListener("click", () => {
-    loadWords(ctx);
-  });
+  elements.importCsv?.addEventListener("click", () => importCsv(ctx));
+  elements.exportCsv?.addEventListener("click", () => exportCsv(ctx));
+  elements.importFile?.addEventListener("change", () =>
+    setStatus(elements.importStatus, "")
+  );
 
-  if (ctx.elements.importCsv) {
-    ctx.elements.importCsv.addEventListener("click", () => {
-      importCsv(ctx);
-    });
-  }
+  elements.showTranslation.addEventListener("click", () => revealTranslation(ctx));
 
-  if (ctx.elements.exportCsv) {
-    ctx.elements.exportCsv.addEventListener("click", () => {
-      exportCsv(ctx);
-    });
-  }
-
-  if (ctx.elements.importFile && ctx.elements.importStatus) {
-    ctx.elements.importFile.addEventListener("change", () => {
-      setStatus(ctx.elements.importStatus, "");
-    });
-  }
-
-  ctx.elements.refreshReview.addEventListener("click", () => {
-    loadReviewQueue(ctx);
-  });
-
-  ctx.elements.refreshStats.addEventListener("click", () => {
-    loadStats(ctx);
-  });
-
-  ctx.elements.showTranslation.addEventListener("click", () => {
-    revealTranslation(ctx);
-  });
-
-  ctx.elements.markGood.addEventListener("click", async () => {
+  elements.markGood.addEventListener("click", async () => {
     await submitReview(ctx, "good");
     await loadStats(ctx);
     await loadWords(ctx);
   });
 
-  ctx.elements.markBad.addEventListener("click", async () => {
+  elements.markBad.addEventListener("click", async () => {
     await submitReview(ctx, "bad");
     await loadStats(ctx);
     await loadWords(ctx);
@@ -204,40 +173,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const runSearch = debounce(() => loadWords(ctx), 300);
 
   const syncSearchInputs = (value) => {
-    if (ctx.elements.searchInput && ctx.elements.searchInput.value !== value) {
-      ctx.elements.searchInput.value = value;
+    if (elements.searchInput && elements.searchInput.value !== value) {
+      elements.searchInput.value = value;
     }
     if (
-      ctx.elements.wordlistSearchInput &&
-      ctx.elements.wordlistSearchInput.value !== value
+      elements.wordlistSearchInput &&
+      elements.wordlistSearchInput.value !== value
     ) {
-      ctx.elements.wordlistSearchInput.value = value;
+      elements.wordlistSearchInput.value = value;
     }
   };
 
-  if (ctx.elements.searchInput) {
-    ctx.elements.searchInput.addEventListener("input", () => {
-      syncSearchInputs(ctx.elements.searchInput.value);
-      runSearch();
-    });
+  elements.searchInput?.addEventListener("input", () => {
+    syncSearchInputs(elements.searchInput.value);
+    runSearch();
+  });
+
+  elements.wordlistSearchInput?.addEventListener("input", () => {
+    syncSearchInputs(elements.wordlistSearchInput.value);
+    runSearch();
+  });
+
+  if (elements.wordlistSearchInput) {
+    syncSearchInputs(elements.searchInput?.value ?? "");
   }
 
-  if (ctx.elements.wordlistSearchInput) {
-    ctx.elements.wordlistSearchInput.addEventListener("input", () => {
-      syncSearchInputs(ctx.elements.wordlistSearchInput.value);
-      runSearch();
-    });
-    syncSearchInputs(ctx.elements.searchInput?.value ?? "");
-  }
+  elements.wordlistClearSearch?.addEventListener("click", async () => {
+    syncSearchInputs("");
+    await loadWords(ctx);
+  });
 
-  if (ctx.elements.wordlistClearSearch) {
-    ctx.elements.wordlistClearSearch.addEventListener("click", async () => {
-      syncSearchInputs("");
-      await loadWords(ctx);
-    });
-  }
-
-  ctx.elements.tagFilter.addEventListener("input", runSearch);
+  elements.tagFilter.addEventListener("input", runSearch);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -248,17 +214,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.body.classList.add("page-loaded");
   initWordsCardsDragAndDrop();
-  let started = false;
-  const authed = await initAuthUI(ctx, {
-    onAuthed: () => {
-      if (started) return;
-      started = true;
-      startApp(ctx);
-    },
-  });
+  initConfirmModal(ctx);
+  resetForm(ctx);
+  bindUI(ctx);
 
-  if (authed && !started) {
+  let started = false;
+  const ensureStarted = () => {
+    if (started) return;
     started = true;
     startApp(ctx);
-  }
+  };
+
+  const authed = await initAuthUI(ctx, { onAuthed: ensureStarted });
+  if (authed) ensureStarted();
 });
+

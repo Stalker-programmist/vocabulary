@@ -26,3 +26,12 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(pages_router)
 app.include_router(auth_router)
 app.include_router(api_router)
+
+
+@app.middleware("http")
+async def disable_static_cache(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        # В dev-режиме это упрощает отладку: браузер не будет «держать» старые JS/CSS.
+        response.headers["Cache-Control"] = "no-store"
+    return response
