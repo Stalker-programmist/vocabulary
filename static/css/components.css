@@ -692,3 +692,48 @@ body.auth-required {
     display: none;
   }
 }
+
+/* Toast-уведомления (например, когда пользователь не авторизован). */
+.toast-stack {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  gap: 10px;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  max-width: min(340px, 92vw);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(15, 31, 36, 0.92);
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 18px 34px rgba(15, 31, 36, 0.26);
+  animation: toast-in 160ms ease-out;
+}
+
+.toast[data-closing="true"] {
+  animation: toast-out 200ms ease-in forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}

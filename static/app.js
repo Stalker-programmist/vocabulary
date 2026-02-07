@@ -15,6 +15,7 @@ import { createState } from "./js/state.js";
 import { loadStats } from "./js/stats.js";
 import { initStatsChart } from "./js/charts.js";
 import { switchSection } from "./js/tabs.js";
+import { initToasts } from "./js/toast.js";
 import { debounce, setStatus } from "./js/utils.js";
 import { loadWords, resetForm } from "./js/words.js";
 
@@ -221,6 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.body.classList.add("page-loaded");
   initWordsCardsDragAndDrop();
   initMicroAnimations();
+  initToasts();
   initConfirmModal(ctx);
   resetForm(ctx);
   bindUI(ctx);

@@ -63,6 +63,7 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
 
   const setLoggedOutUI = () => {
     state.user = null;
+    ctx.state.isAuthed = false;
     if (el.authStatus) el.authStatus.textContent = "Not signed in";
     if (el.authLoginBtn) el.authLoginBtn.hidden = false;
     if (el.authRegisterBtn) el.authRegisterBtn.hidden = false;
@@ -71,6 +72,7 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
 
   const setLoggedInUI = (user) => {
     state.user = user ?? null;
+    ctx.state.isAuthed = Boolean(state.user);
     if (el.authStatus) el.authStatus.textContent = user?.email || "Signed in";
     if (el.authLoginBtn) el.authLoginBtn.hidden = true;
     if (el.authRegisterBtn) el.authRegisterBtn.hidden = true;
@@ -146,6 +148,9 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     submit();
   });
 
+  // По умолчанию блокируем действия, пока не проверили сессию.
+  setLoggedOutUI();
+
   // Инициализация: если не авторизован — покажем модалку логина.
   return refreshMe().then((ok) => {
     if (ok) {
@@ -157,4 +162,3 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     return false;
   });
 }
-
