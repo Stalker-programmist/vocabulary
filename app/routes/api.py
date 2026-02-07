@@ -115,8 +115,8 @@ async def import_words_csv(
     session: Session = Depends(get_session),
 ) -> dict:
     """
-    Import words from CSV.
-    Supported columns: term, translation, example, tags (others ignored).
+    Импорт слов из CSV.
+    Поддерживаемые колонки: term, translation, example, tags (остальные игнорируются).
     """
     raw = await file.read()
     try:
@@ -190,7 +190,7 @@ def export_words_csv(
 
 @router.get("/review/today", response_model=list[Word])
 def review_today(
-    limit: int = 20,
+    limit: int = 50,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> list[Word]:
@@ -334,4 +334,3 @@ def get_stats(
         reviews_365d=reviews_365d,
         due_next_7d=due_next_7d,
     )
-

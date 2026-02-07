@@ -379,11 +379,17 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .primary {
@@ -601,4 +607,36 @@ th {
 
 body.auth-required {
   overflow: hidden;
+}
+
+/* Ripple-эффект (микро-анимация на ключевых кнопках). */
+.ripple-circle {
+  position: absolute;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.18;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ripple 560ms ease-out forwards;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+
+  button:active:not(:disabled) {
+    transform: none;
+  }
+
+  .ripple-circle {
+    display: none;
+  }
 }

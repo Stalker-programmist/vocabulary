@@ -8,6 +8,7 @@ import { apiRequest } from "./js/api.js";
 import { initAuthUI } from "./js/auth.js";
 import { queryElements } from "./js/dom.js";
 import { initWordsCardsDragAndDrop } from "./js/layout_drag.js";
+import { initMicroAnimations } from "./js/micro_animations.js";
 import { initConfirmModal } from "./js/modal.js";
 import { loadReviewQueue, revealTranslation, submitReview } from "./js/review.js";
 import { createState } from "./js/state.js";
@@ -214,6 +215,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.body.classList.add("page-loaded");
   initWordsCardsDragAndDrop();
+  initMicroAnimations();
   initConfirmModal(ctx);
   resetForm(ctx);
   bindUI(ctx);
@@ -228,4 +230,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authed = await initAuthUI(ctx, { onAuthed: ensureStarted });
   if (authed) ensureStarted();
 });
-
