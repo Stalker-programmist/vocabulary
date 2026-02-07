@@ -118,14 +118,17 @@
             <div class="form">
               <label>
                 <span>CSV file</span>
-                <input id="import-file" type="file" accept=".csv,text/csv" />
+                <div class="file-picker">
+                  <button class="ghost" id="import-file-btn" type="button">Choose file</button>
+                  <span class="file-name" id="import-file-name">No file chosen</span>
+                </div>
+                <input id="import-file" class="file-input" type="file" accept=".csv,text/csv" />
               </label>
               <div class="form-actions">
                 <button class="primary" id="import-csv" type="button">Import CSV</button>
                 <button class="ghost" id="export-csv" type="button">Export CSV</button>
               </div>
               <div class="status" id="import-status" role="status"></div>
-              <p class="hint">Columns: term, translation, example, tags, stage, next_review, created_at</p>
             </div>
           </div>
 

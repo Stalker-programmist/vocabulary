@@ -14,6 +14,8 @@ export function queryElements() {
     wordlistSearchInput: document.querySelector("#wordlist-search-input"),
     wordlistClearSearch: document.querySelector("#wordlist-clear-search"),
     importFile: document.querySelector("#import-file"),
+    importFileBtn: document.querySelector("#import-file-btn"),
+    importFileName: document.querySelector("#import-file-name"),
     importCsv: document.querySelector("#import-csv"),
     exportCsv: document.querySelector("#export-csv"),
     importStatus: document.querySelector("#import-status"),

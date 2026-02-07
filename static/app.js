@@ -41,7 +41,7 @@ function parseErrorMessage(text, fallback) {
 }
 
 async function importCsv(ctx) {
-  const { importFile, importStatus } = ctx.elements;
+  const { importFile, importFileName, importStatus } = ctx.elements;
   if (!importFile || !importStatus) return;
   if (!importFile.files || !importFile.files.length) {
     setStatus(importStatus, "Choose a CSV file first.");
@@ -66,6 +66,7 @@ async function importCsv(ctx) {
     const skipped = data.skipped ? `, skipped ${data.skipped}` : "";
     setStatus(importStatus, `Imported ${data.imported}${skipped}.`);
     importFile.value = "";
+    if (importFileName) importFileName.textContent = "No file chosen";
     await loadWords(ctx);
     await loadStats(ctx);
   } catch (error) {
@@ -153,9 +154,13 @@ function bindUI(ctx) {
 
   elements.importCsv?.addEventListener("click", () => importCsv(ctx));
   elements.exportCsv?.addEventListener("click", () => exportCsv(ctx));
-  elements.importFile?.addEventListener("change", () =>
-    setStatus(elements.importStatus, "")
-  );
+  elements.importFileBtn?.addEventListener("click", () => elements.importFile?.click());
+  elements.importFile?.addEventListener("change", () => {
+    setStatus(elements.importStatus, "");
+    if (!elements.importFileName) return;
+    const file = elements.importFile.files?.[0];
+    elements.importFileName.textContent = file?.name || "No file chosen";
+  });
 
   elements.showTranslation.addEventListener("click", () => revealTranslation(ctx));
 
