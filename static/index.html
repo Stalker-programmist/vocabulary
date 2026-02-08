@@ -207,6 +207,78 @@
             </div>
           </div>
 
+          <div class="card" style="--delay: 0.08s;" data-card-id="training-levels">
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Training levels</h3>
+                  <p>Use the loaded word set to practice.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
+            </div>
+            <div class="form">
+              <label>
+                <span>Level</span>
+                <select id="training-level">
+                  <option value="1">Level 1 — multiple choice (1 correct + 3 distractors)</option>
+                  <option value="2">Level 2 — matching (8 words + 8 translations)</option>
+                </select>
+              </label>
+              <div class="form-actions">
+                <button class="primary" id="training-run" type="button">Start training</button>
+                <button class="ghost" id="training-reset" type="button">Reset</button>
+              </div>
+              <p class="hint" id="training-hint">Load words first.</p>
+              <div class="status" id="training-game-status" role="status"></div>
+            </div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.1s;" data-card-id="training-level-1" hidden>
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Level 1 — Choose the answer</h3>
+                  <p id="training-l1-progress">No session yet.</p>
+                </div>
+                <div class="header-actions">
+                  <button class="ghost" id="training-l1-skip" type="button">Skip</button>
+                  <button class="primary" id="training-l1-next" type="button">Next</button>
+                </div>
+              </div>
+            </div>
+            <div class="training-game">
+              <p class="training-question" id="training-l1-question">—</p>
+              <div class="choice-grid" id="training-l1-choices"></div>
+            </div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.12s;" data-card-id="training-level-2" hidden>
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Level 2 — Matching</h3>
+                  <p id="training-l2-progress">Pair 8 terms with their translations.</p>
+                </div>
+                <div class="header-actions">
+                  <button class="ghost" id="training-l2-new" type="button">New set</button>
+                  <button class="primary" id="training-l2-check" type="button">Check</button>
+                </div>
+              </div>
+            </div>
+            <div class="match-board" id="training-l2-board">
+              <div class="match-col">
+                <h4 class="match-title">Terms</h4>
+                <div class="match-list" id="training-l2-terms"></div>
+              </div>
+              <div class="match-col">
+                <h4 class="match-title">Translations</h4>
+                <div class="match-list" id="training-l2-translations"></div>
+              </div>
+            </div>
+            <div class="status" id="training-l2-status" role="status"></div>
+          </div>
+
           <div class="card table-card" style="--delay: 0.1s;" data-card-id="training-words">
             <div class="card-head">
               <div>
