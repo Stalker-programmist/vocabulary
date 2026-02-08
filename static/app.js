@@ -10,10 +10,10 @@ import { queryElements } from "./js/dom.js";
 import { initWordsCardsDragAndDrop } from "./js/layout_drag.js";
 import { initMicroAnimations } from "./js/micro_animations.js";
 import { initConfirmModal } from "./js/modal.js";
-import { loadReviewQueue, revealTranslation, submitReview } from "./js/review.js";
 import { createState } from "./js/state.js";
 import { loadStats } from "./js/stats.js";
 import { initStatsChart } from "./js/charts.js";
+import { initTraining } from "./js/training.js";
 import { switchSection } from "./js/tabs.js";
 import { initToasts } from "./js/toast.js";
 import { debounce, setStatus } from "./js/utils.js";
@@ -102,7 +102,6 @@ async function exportCsv(ctx) {
 
 function startApp(ctx) {
   loadWords(ctx);
-  loadReviewQueue(ctx);
   loadStats(ctx);
   initStatsChart(ctx);
 }
@@ -110,9 +109,14 @@ function startApp(ctx) {
 function bindUI(ctx) {
   const { elements } = ctx;
 
+  const training = initTraining(ctx);
+
   elements.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       switchSection(ctx, tab.dataset.section);
+      if (tab.dataset.section === "review") {
+        if (ctx.state.isAuthed) training.refreshThemes();
+      }
     });
   });
 
@@ -150,7 +154,6 @@ function bindUI(ctx) {
 
   elements.cancelEdit.addEventListener("click", () => resetForm(ctx));
   elements.refreshWords.addEventListener("click", () => loadWords(ctx));
-  elements.refreshReview.addEventListener("click", () => loadReviewQueue(ctx));
   elements.refreshStats.addEventListener("click", () => loadStats(ctx));
 
   elements.importCsv?.addEventListener("click", () => importCsv(ctx));
@@ -161,20 +164,6 @@ function bindUI(ctx) {
     if (!elements.importFileName) return;
     const file = elements.importFile.files?.[0];
     elements.importFileName.textContent = file?.name || "No file chosen";
-  });
-
-  elements.showTranslation.addEventListener("click", () => revealTranslation(ctx));
-
-  elements.markGood.addEventListener("click", async () => {
-    await submitReview(ctx, "good");
-    await loadStats(ctx);
-    await loadWords(ctx);
-  });
-
-  elements.markBad.addEventListener("click", async () => {
-    await submitReview(ctx, "bad");
-    await loadStats(ctx);
-    await loadWords(ctx);
   });
 
   const runSearch = debounce(() => loadWords(ctx), 300);

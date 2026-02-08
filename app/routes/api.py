@@ -12,11 +12,32 @@ from sqlmodel import Session, select
 
 from ..deps import get_current_user, get_session
 from ..models import Review, User, Word
-from ..schemas import ReviewResult, StatsOut, WordCreate, WordUpdate
+from ..schemas import ReviewResult, StatsOut, ThemeOut, WordCreate, WordUpdate
 from ..services.review import MAX_STAGE, next_review_date
 from ..services.tags import normalize_tag, normalize_tags
 
 router = APIRouter(prefix="/api", tags=["api"])
+
+@router.get("/themes", response_model=list[ThemeOut])
+def list_themes(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> list[ThemeOut]:
+    # Темы = теги слов пользователя (CSV в поле `tags`).
+    words = session.exec(select(Word.tags).where(Word.user_id == user.id)).all()
+    counts: dict[str, int] = {}
+    for tags in words:
+        if not tags:
+            continue
+        for raw in str(tags).split(","):
+            tag = raw.strip().lower()
+            if not tag:
+                continue
+            counts[tag] = counts.get(tag, 0) + 1
+
+    themes = [ThemeOut(tag=tag, count=count) for tag, count in counts.items()]
+    themes.sort(key=lambda item: (-item.count, item.tag))
+    return themes
 
 
 @router.get("/words", response_model=list[Word])

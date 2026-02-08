@@ -15,7 +15,9 @@ export async function loadStats({ elements }) {
     elements.statReviews30d.textContent = data.reviews_30d;
     elements.statReviews365d.textContent = data.reviews_365d;
   } catch (err) {
-    setStatus(elements.reviewStatus, err.message || "Stats failed");
+    if (elements.statsChartStatus) {
+      setStatus(elements.statsChartStatus, err.message || "Stats failed");
+    }
   }
 }
 

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.db import init_db
@@ -35,3 +36,13 @@ async def disable_static_cache(request, call_next):
         # В dev-режиме это упрощает отладку: браузер не будет «держать» старые JS/CSS.
         response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon_ico():
+    return FileResponse(STATIC_DIR / "favicon.ico")
+
+
+@app.get("/favicon.svg", include_in_schema=False)
+def favicon_svg():
+    return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")

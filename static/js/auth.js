@@ -24,6 +24,49 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     isOpen: false,
   };
 
+  const setAppControlsEnabled = (enabled) => {
+    const shouldDisable = !enabled;
+
+    const setDisabled = (node) => {
+      if (!node) return;
+      if ("disabled" in node) node.disabled = shouldDisable;
+      if (shouldDisable) node.setAttribute("aria-disabled", "true");
+      else node.removeAttribute("aria-disabled");
+    };
+
+    [
+      el.refreshWords,
+      el.saveWord,
+      el.cancelEdit,
+      el.searchInput,
+      el.tagFilter,
+      el.wordlistSearchInput,
+      el.wordlistClearSearch,
+      el.importFile,
+      el.importFileBtn,
+      el.importCsv,
+      el.exportCsv,
+      el.refreshStats,
+      el.trainingTheme,
+      el.trainingStart,
+    ].forEach(setDisabled);
+
+    if (el.statsRangeButtons && typeof el.statsRangeButtons.forEach === "function") {
+      el.statsRangeButtons.forEach(setDisabled);
+    }
+  };
+
+  const emitAuthChanged = () => {
+    window.dispatchEvent(
+      new CustomEvent("auth:changed", {
+        detail: {
+          isAuthed: ctx.state.isAuthed,
+          user: state.user,
+        },
+      })
+    );
+  };
+
   const setAuthModeText = () => {
     const isRegister = state.mode === "register";
     if (el.authTitle) {
@@ -68,6 +111,8 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     if (el.authLoginBtn) el.authLoginBtn.hidden = false;
     if (el.authRegisterBtn) el.authRegisterBtn.hidden = false;
     if (el.authLogoutBtn) el.authLogoutBtn.hidden = true;
+    setAppControlsEnabled(false);
+    emitAuthChanged();
   };
 
   const setLoggedInUI = (user) => {
@@ -77,6 +122,8 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     if (el.authLoginBtn) el.authLoginBtn.hidden = true;
     if (el.authRegisterBtn) el.authRegisterBtn.hidden = true;
     if (el.authLogoutBtn) el.authLogoutBtn.hidden = false;
+    setAppControlsEnabled(true);
+    emitAuthChanged();
   };
 
   const refreshMe = async () => {

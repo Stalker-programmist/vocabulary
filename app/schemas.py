@@ -62,3 +62,8 @@ class StatsOut(SQLModel):
     reviews_365d: int
     due_next_7d: int
 
+
+class ThemeOut(SQLModel):
+    tag: str
+    count: int
+

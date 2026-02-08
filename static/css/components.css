@@ -369,6 +369,15 @@ textarea {
   background: rgba(255, 255, 255, 0.9);
 }
 
+select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+}
+
 input:focus,
 textarea:focus {
   outline: 3px solid rgba(63, 184, 166, 0.22);
