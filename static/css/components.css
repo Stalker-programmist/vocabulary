@@ -653,6 +653,60 @@ th {
   font-weight: 700;
 }
 
+.training-sheet {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.training-task {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.training-task.is-correct {
+  border-color: rgba(63, 184, 166, 0.65);
+  background: rgba(63, 184, 166, 0.08);
+}
+
+.training-task.is-wrong {
+  border-color: rgba(207, 75, 31, 0.55);
+  background: rgba(207, 75, 31, 0.06);
+}
+
+.training-prompt {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.training-prompt.training-context {
+  font-weight: 600;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.training-input {
+  display: grid;
+  gap: 8px;
+}
+
+.training-feedback {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 720px) {
+  .training-task {
+    grid-template-columns: 1fr;
+  }
+}
+
 .review-card {
   display: grid;
   gap: 16px;

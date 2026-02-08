@@ -64,6 +64,20 @@ export function queryElements() {
     trainingL2New: document.querySelector("#training-l2-new"),
     trainingL2Status: document.querySelector("#training-l2-status"),
 
+    trainingLevel3Card: document.querySelector('[data-card-id="training-level-3"]'),
+    trainingL3Progress: document.querySelector("#training-l3-progress"),
+    trainingL3Sheet: document.querySelector("#training-l3-sheet"),
+    trainingL3Check: document.querySelector("#training-l3-check"),
+    trainingL3New: document.querySelector("#training-l3-new"),
+    trainingL3Status: document.querySelector("#training-l3-status"),
+
+    trainingLevel4Card: document.querySelector('[data-card-id="training-level-4"]'),
+    trainingL4Progress: document.querySelector("#training-l4-progress"),
+    trainingL4Sheet: document.querySelector("#training-l4-sheet"),
+    trainingL4Check: document.querySelector("#training-l4-check"),
+    trainingL4New: document.querySelector("#training-l4-new"),
+    trainingL4Status: document.querySelector("#training-l4-status"),
+
     authStatus: document.querySelector("#auth-status"),
     authLoginBtn: document.querySelector("#auth-login-btn"),
     authRegisterBtn: document.querySelector("#auth-register-btn"),

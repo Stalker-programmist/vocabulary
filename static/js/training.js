@@ -3,6 +3,8 @@
  * Режим тренировки:
  * - Уровень 1: выбор ответа (1 правильный + 3 отвлекающих)
  * - Уровень 2: сопоставление (8 слов + 8 переводов)
+ * - Уровень 3: ввод перевода (8 заданий)
+ * - Уровень 4: контекст с пропуском (8 заданий)
  */
 
 import { apiRequest } from "./api.js";
@@ -44,6 +46,49 @@ function sample(items, count) {
   if (count <= 0) return [];
   if (items.length <= count) return shuffled(items);
   return shuffled(items).slice(0, count);
+}
+
+function normalizeAnswer(text) {
+  return String(text || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function splitVariants(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return [];
+  return raw
+    .split(/[,/;|]+/g)
+    .map((part) => normalizeAnswer(part))
+    .filter(Boolean);
+}
+
+function isOneOf(input, expectedList) {
+  const value = normalizeAnswer(input);
+  if (!value) return false;
+  for (const expected of expectedList) {
+    if (value === normalizeAnswer(expected)) return true;
+    const variants = splitVariants(expected);
+    if (variants.includes(value)) return true;
+  }
+  return false;
+}
+
+function escapeRegExp(text) {
+  return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildBlankExample(example, term) {
+  const src = String(example || "").trim();
+  const needle = String(term || "").trim();
+  if (!src || !needle) return null;
+
+  const escaped = escapeRegExp(needle);
+  const regex = new RegExp(`\\b${escaped}\\b`, "i");
+  if (!regex.test(src)) return null;
+
+  return src.replace(regex, "____");
 }
 
 function renderWordsTable(ctx, words) {
@@ -115,6 +160,8 @@ export function initTraining(ctx) {
     level: 1,
     level1: null,
     level2: null,
+    level3: null,
+    level4: null,
   };
 
   const updateHint = () => {
@@ -128,8 +175,12 @@ export function initTraining(ctx) {
   const resetGames = () => {
     state.training.level1 = null;
     state.training.level2 = null;
+    state.training.level3 = null;
+    state.training.level4 = null;
     setHidden(elements.trainingLevel1Card, true);
     setHidden(elements.trainingLevel2Card, true);
+    setHidden(elements.trainingLevel3Card, true);
+    setHidden(elements.trainingLevel4Card, true);
     if (elements.trainingL1Choices) elements.trainingL1Choices.innerHTML = "";
     setText(elements.trainingL1Question, "—");
     setText(elements.trainingL1Progress, "No session yet.");
@@ -137,6 +188,12 @@ export function initTraining(ctx) {
     if (elements.trainingL2Terms) elements.trainingL2Terms.innerHTML = "";
     if (elements.trainingL2Translations) elements.trainingL2Translations.innerHTML = "";
     safeStatus(elements.trainingL2Status, "");
+    if (elements.trainingL3Sheet) elements.trainingL3Sheet.innerHTML = "";
+    if (elements.trainingL4Sheet) elements.trainingL4Sheet.innerHTML = "";
+    setText(elements.trainingL3Progress, "Write the translation for each term.");
+    setText(elements.trainingL4Progress, "Fill the blank with the term or its translation.");
+    safeStatus(elements.trainingL3Status, "");
+    safeStatus(elements.trainingL4Status, "");
     safeStatus(elements.trainingGameStatus, "");
   };
 
@@ -494,6 +551,211 @@ export function initTraining(ctx) {
     safeStatus(elements.trainingL2Status, "");
   };
 
+  const renderLevel3 = () => {
+    const session = state.training.level3;
+    if (!session) return;
+    if (!elements.trainingL3Sheet) return;
+
+    elements.trainingL3Sheet.innerHTML = "";
+    safeStatus(elements.trainingGameStatus, "");
+    if (!session.checked) safeStatus(elements.trainingL3Status, "");
+
+    for (const task of session.tasks) {
+      const row = document.createElement("div");
+      row.className = "training-task";
+      row.dataset.taskId = task.id;
+
+      const prompt = document.createElement("div");
+      prompt.className = "training-prompt";
+      prompt.textContent = task.term;
+
+      const inputWrap = document.createElement("div");
+      inputWrap.className = "training-input";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.autocomplete = "off";
+      input.placeholder = "Type translation";
+      input.value = task.answer || "";
+      input.disabled = session.checked;
+      input.addEventListener("input", () => {
+        task.answer = input.value;
+      });
+
+      const feedback = document.createElement("div");
+      feedback.className = "training-feedback";
+      if (session.checked) {
+        const ok = Boolean(task.correct);
+        row.classList.toggle("is-correct", ok);
+        row.classList.toggle("is-wrong", !ok);
+        feedback.textContent = ok ? "Correct" : `Answer: ${task.translation}`;
+      } else {
+        feedback.textContent = "";
+      }
+
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(feedback);
+
+      row.appendChild(prompt);
+      row.appendChild(inputWrap);
+      elements.trainingL3Sheet.appendChild(row);
+    }
+
+    setText(elements.trainingL3Progress, `Prompts: ${session.tasks.length}/8`);
+    if (elements.trainingL3Check) {
+      elements.trainingL3Check.disabled = session.checked;
+    }
+  };
+
+  const startLevel3 = () => {
+    const words = state.training.words;
+    if (words.length < 8) {
+      throw new Error("Level 3 needs at least 8 words in the loaded set.");
+    }
+
+    const setWords = sample(words, 8);
+    state.training.level3 = {
+      tasks: setWords.map((w) => ({
+        id: String(w.id),
+        term: String(w.term || "").trim(),
+        translation: String(w.translation || "").trim(),
+        answer: "",
+        correct: null,
+      })),
+      checked: false,
+    };
+
+    setHidden(elements.trainingLevel3Card, false);
+    setHidden(elements.trainingLevel1Card, true);
+    setHidden(elements.trainingLevel2Card, true);
+    setHidden(elements.trainingLevel4Card, true);
+    renderLevel3();
+  };
+
+  const checkLevel3 = () => {
+    const session = state.training.level3;
+    if (!session) return;
+    let correct = 0;
+    for (const task of session.tasks) {
+      const expected = [task.translation];
+      const ok = isOneOf(task.answer, expected);
+      task.correct = ok;
+      if (ok) correct += 1;
+    }
+    session.checked = true;
+    safeStatus(elements.trainingL3Status, `Score: ${correct}/8`);
+    renderLevel3();
+  };
+
+  const renderLevel4 = () => {
+    const session = state.training.level4;
+    if (!session) return;
+    if (!elements.trainingL4Sheet) return;
+
+    elements.trainingL4Sheet.innerHTML = "";
+    safeStatus(elements.trainingGameStatus, "");
+    if (!session.checked) safeStatus(elements.trainingL4Status, "");
+
+    for (const task of session.tasks) {
+      const row = document.createElement("div");
+      row.className = "training-task";
+      row.dataset.taskId = task.id;
+
+      const prompt = document.createElement("div");
+      prompt.className = "training-prompt training-context";
+      prompt.textContent = task.prompt;
+
+      const inputWrap = document.createElement("div");
+      inputWrap.className = "training-input";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.autocomplete = "off";
+      input.placeholder = "Type the missing term or translation";
+      input.value = task.answer || "";
+      input.disabled = session.checked;
+      input.addEventListener("input", () => {
+        task.answer = input.value;
+      });
+
+      const feedback = document.createElement("div");
+      feedback.className = "training-feedback";
+      if (session.checked) {
+        const ok = Boolean(task.correct);
+        row.classList.toggle("is-correct", ok);
+        row.classList.toggle("is-wrong", !ok);
+        feedback.textContent = ok
+          ? "Correct"
+          : `Answer: ${task.term} — ${task.translation}`;
+      } else {
+        feedback.textContent = "";
+      }
+
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(feedback);
+
+      row.appendChild(prompt);
+      row.appendChild(inputWrap);
+      elements.trainingL4Sheet.appendChild(row);
+    }
+
+    setText(elements.trainingL4Progress, `Examples: ${session.tasks.length}/8`);
+    if (elements.trainingL4Check) {
+      elements.trainingL4Check.disabled = session.checked;
+    }
+  };
+
+  const startLevel4 = () => {
+    const words = state.training.words;
+    const candidates = [];
+    for (const w of words) {
+      const prompt = buildBlankExample(w.example, w.term);
+      if (!prompt) continue;
+      const term = String(w.term || "").trim();
+      const translation = String(w.translation || "").trim();
+      if (!term || !translation) continue;
+      candidates.push({ word: w, prompt, term, translation });
+    }
+
+    if (candidates.length < 8) {
+      throw new Error("Level 4 needs at least 8 words with examples containing the term.");
+    }
+
+    const picked = sample(candidates, 8);
+    state.training.level4 = {
+      tasks: picked.map((item) => ({
+        id: String(item.word.id),
+        prompt: item.prompt,
+        term: item.term,
+        translation: item.translation,
+        answer: "",
+        correct: null,
+      })),
+      checked: false,
+    };
+
+    setHidden(elements.trainingLevel4Card, false);
+    setHidden(elements.trainingLevel1Card, true);
+    setHidden(elements.trainingLevel2Card, true);
+    setHidden(elements.trainingLevel3Card, true);
+    renderLevel4();
+  };
+
+  const checkLevel4 = () => {
+    const session = state.training.level4;
+    if (!session) return;
+    let correct = 0;
+    for (const task of session.tasks) {
+      const expected = [task.term, task.translation];
+      const ok = isOneOf(task.answer, expected);
+      task.correct = ok;
+      if (ok) correct += 1;
+    }
+    session.checked = true;
+    safeStatus(elements.trainingL4Status, `Score: ${correct}/8`);
+    renderLevel4();
+  };
+
   const clearTraining = () => {
     state.training.themesLoaded = false;
     state.training.themes = [];
@@ -525,7 +787,9 @@ export function initTraining(ctx) {
       state.training.level = level;
       resetGames();
       if (level === 1) startLevel1();
-      else startLevel2();
+      else if (level === 2) startLevel2();
+      else if (level === 3) startLevel3();
+      else startLevel4();
     } catch (error) {
       safeStatus(elements.trainingGameStatus, error?.message || "Failed to start training");
     }
@@ -551,6 +815,32 @@ export function initTraining(ctx) {
   });
 
   elements.trainingL2Check?.addEventListener("click", () => checkLevel2());
+
+  elements.trainingL3New?.addEventListener("click", () => {
+    try {
+      const loaded = state.training.words.length > 0;
+      if (!loaded) throw new Error("Load words first.");
+      resetGames();
+      startLevel3();
+    } catch (error) {
+      safeStatus(elements.trainingGameStatus, error?.message || "Failed to start Level 3");
+    }
+  });
+
+  elements.trainingL3Check?.addEventListener("click", () => checkLevel3());
+
+  elements.trainingL4New?.addEventListener("click", () => {
+    try {
+      const loaded = state.training.words.length > 0;
+      if (!loaded) throw new Error("Load words first.");
+      resetGames();
+      startLevel4();
+    } catch (error) {
+      safeStatus(elements.trainingGameStatus, error?.message || "Failed to start Level 4");
+    }
+  });
+
+  elements.trainingL4Check?.addEventListener("click", () => checkLevel4());
 
   window.addEventListener("auth:changed", (event) => {
     const isAuthed = Boolean(event?.detail?.isAuthed);

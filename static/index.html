@@ -223,6 +223,8 @@
                 <select id="training-level">
                   <option value="1">Level 1 — multiple choice (1 correct + 3 distractors)</option>
                   <option value="2">Level 2 — matching (8 words + 8 translations)</option>
+                  <option value="3">Level 3 — typing (8 prompts + write translations)</option>
+                  <option value="4">Level 4 — context (8 examples + fill the blank)</option>
                 </select>
               </label>
               <div class="form-actions">
@@ -277,6 +279,40 @@
               </div>
             </div>
             <div class="status" id="training-l2-status" role="status"></div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.12s;" data-card-id="training-level-3" hidden>
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Level 3 — Typing</h3>
+                  <p id="training-l3-progress">Write the translation for each term.</p>
+                </div>
+                <div class="header-actions">
+                  <button class="ghost" id="training-l3-new" type="button">New set</button>
+                  <button class="primary" id="training-l3-check" type="button">Check</button>
+                </div>
+              </div>
+            </div>
+            <div class="training-sheet" id="training-l3-sheet"></div>
+            <div class="status" id="training-l3-status" role="status"></div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.14s;" data-card-id="training-level-4" hidden>
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Level 4 — Context</h3>
+                  <p id="training-l4-progress">Fill the blank with the term or its translation.</p>
+                </div>
+                <div class="header-actions">
+                  <button class="ghost" id="training-l4-new" type="button">New set</button>
+                  <button class="primary" id="training-l4-check" type="button">Check</button>
+                </div>
+              </div>
+            </div>
+            <div class="training-sheet" id="training-l4-sheet"></div>
+            <div class="status" id="training-l4-status" role="status"></div>
           </div>
 
           <div class="card table-card" style="--delay: 0.1s;" data-card-id="training-words">
