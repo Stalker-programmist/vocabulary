@@ -280,6 +280,8 @@ export function initTraining(ctx) {
       correct: 0,
       answered: false,
       lastWasCorrect: null,
+      // Таймер автоперехода к следующему слову (после ответа).
+      autoNextTimer: null,
     };
 
     setHidden(elements.trainingLevel1Card, false);
@@ -325,16 +327,18 @@ export function initTraining(ctx) {
       );
       setText(elements.trainingL1Question, "Session complete.");
       if (elements.trainingL1Choices) elements.trainingL1Choices.innerHTML = "";
-      if (elements.trainingL1Next) elements.trainingL1Next.disabled = true;
       if (elements.trainingL1Skip) elements.trainingL1Skip.disabled = true;
       return;
     }
 
-    if (elements.trainingL1Next) elements.trainingL1Next.disabled = true;
     if (elements.trainingL1Skip) elements.trainingL1Skip.disabled = false;
 
     session.answered = false;
     session.lastWasCorrect = null;
+    if (session.autoNextTimer) {
+      clearTimeout(session.autoNextTimer);
+      session.autoNextTimer = null;
+    }
 
     setText(
       elements.trainingL1Progress,
@@ -354,7 +358,6 @@ export function initTraining(ctx) {
         error?.message || "Failed to generate question"
       );
       if (elements.trainingL1Choices) elements.trainingL1Choices.innerHTML = "";
-      if (elements.trainingL1Next) elements.trainingL1Next.disabled = true;
       if (elements.trainingL1Skip) elements.trainingL1Skip.disabled = true;
       return;
     }
@@ -382,7 +385,6 @@ export function initTraining(ctx) {
           child.classList.toggle("is-wrong", !correct && child === btn);
         }
 
-        if (elements.trainingL1Next) elements.trainingL1Next.disabled = false;
         if (elements.trainingL1Skip) elements.trainingL1Skip.disabled = true;
         safeStatus(
           elements.trainingGameStatus,
@@ -393,6 +395,12 @@ export function initTraining(ctx) {
           elements.trainingL1Progress,
           `Question ${session.index + 1}/${total} • Score ${session.correct}/${session.index + 1}`
         );
+
+        if (session.autoNextTimer) clearTimeout(session.autoNextTimer);
+        session.autoNextTimer = setTimeout(() => {
+          session.autoNextTimer = null;
+          nextLevel1();
+        }, 650);
       });
       elements.trainingL1Choices.appendChild(btn);
     }
@@ -401,6 +409,10 @@ export function initTraining(ctx) {
   const nextLevel1 = () => {
     const session = state.training.level1;
     if (!session) return;
+    if (session.autoNextTimer) {
+      clearTimeout(session.autoNextTimer);
+      session.autoNextTimer = null;
+    }
     if (session.index >= session.queue.length) return;
     session.index += 1;
     renderLevel1();
@@ -409,6 +421,10 @@ export function initTraining(ctx) {
   const skipLevel1 = () => {
     const session = state.training.level1;
     if (!session) return;
+    if (session.autoNextTimer) {
+      clearTimeout(session.autoNextTimer);
+      session.autoNextTimer = null;
+    }
     if (session.index >= session.queue.length) return;
     session.index += 1;
     renderLevel1();
@@ -861,7 +877,6 @@ export function initTraining(ctx) {
     updateHint();
   });
 
-  elements.trainingL1Next?.addEventListener("click", () => nextLevel1());
   elements.trainingL1Skip?.addEventListener("click", () => skipLevel1());
 
   elements.trainingL2New?.addEventListener("click", () => {

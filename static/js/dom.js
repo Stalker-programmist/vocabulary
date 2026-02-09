@@ -54,7 +54,6 @@ export function queryElements() {
     trainingL1Progress: document.querySelector("#training-l1-progress"),
     trainingL1Question: document.querySelector("#training-l1-question"),
     trainingL1Choices: document.querySelector("#training-l1-choices"),
-    trainingL1Next: document.querySelector("#training-l1-next"),
     trainingL1Skip: document.querySelector("#training-l1-skip"),
     trainingLevel2Card: document.querySelector('[data-card-id="training-level-2"]'),
     trainingL2Progress: document.querySelector("#training-l2-progress"),
