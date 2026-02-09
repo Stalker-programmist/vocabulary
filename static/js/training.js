@@ -400,7 +400,7 @@ export function initTraining(ctx) {
         session.autoNextTimer = setTimeout(() => {
           session.autoNextTimer = null;
           nextLevel1();
-        }, 650);
+        }, 200);
       });
       elements.trainingL1Choices.appendChild(btn);
     }

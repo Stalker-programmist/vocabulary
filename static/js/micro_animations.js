@@ -45,7 +45,9 @@ export function initMicroAnimations() {
       if (shouldIgnoreButton(button)) return;
 
       // Риппл делаем только на «ключевых» кнопках/действиях.
-      const isKeyAction = button.matches(".primary, .ghost, .good, .bad, .tab");
+      const isKeyAction = button.matches(
+        ".primary, .ghost, .good, .bad, .tab, .match-item, .choice-btn"
+      );
       if (!isKeyAction) return;
 
       createRipple(button, event.clientX, event.clientY);
@@ -53,4 +55,3 @@ export function initMicroAnimations() {
     { passive: true }
   );
 }
-
