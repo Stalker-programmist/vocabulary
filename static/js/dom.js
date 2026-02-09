@@ -11,6 +11,7 @@ export function queryElements() {
     searchStatus: document.querySelector("#search-status"),
     searchInput: document.querySelector("#search-input"),
     tagFilter: document.querySelector("#tag-filter"),
+    starredFilter: document.querySelector("#starred-filter"),
     wordlistSearchInput: document.querySelector("#wordlist-search-input"),
     wordlistClearSearch: document.querySelector("#wordlist-clear-search"),
     importFile: document.querySelector("#import-file"),
@@ -39,6 +40,7 @@ export function queryElements() {
     confirmAccept: document.querySelector("[data-confirm-accept]"),
     confirmCancel: document.querySelectorAll("[data-confirm-cancel]"),
     refreshStats: document.querySelector("#refresh-stats"),
+    refreshProfile: document.querySelector("#refresh-profile"),
 
     trainingTheme: document.querySelector("#training-theme"),
     trainingStart: document.querySelector("#training-start"),
@@ -92,5 +94,14 @@ export function queryElements() {
     authSubmit: document.querySelector("#auth-submit"),
     authSwitchMode: document.querySelector("#auth-switch-mode"),
     authError: document.querySelector("#auth-error"),
+
+    profileEmail: document.querySelector("#profile-email"),
+    profileCreatedAt: document.querySelector("#profile-created-at"),
+    profileTotalWords: document.querySelector("#profile-total-words"),
+    profileStarredWords: document.querySelector("#profile-starred-words"),
+    profileDueToday: document.querySelector("#profile-due-today"),
+    profileStatus: document.querySelector("#profile-status"),
+    profileStarredCount: document.querySelector("#profile-starred-count"),
+    profileStarredBody: document.querySelector("#profile-starred-body"),
   };
 }

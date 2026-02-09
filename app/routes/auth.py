@@ -19,7 +19,7 @@ def normalize_email(email: str) -> str:
 
 @router.get("/me")
 def me(user: User = Depends(get_current_user)) -> dict:
-    return {"id": user.id, "email": user.email}
+    return {"id": user.id, "email": user.email, "created_at": user.created_at}
 
 
 @router.post("/register", status_code=201)

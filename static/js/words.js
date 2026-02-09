@@ -11,6 +11,21 @@ export function resetForm({ state, elements }) {
   setStatus(elements.formStatus, "");
 }
 
+async function toggleStar(ctx, word) {
+  const { elements } = ctx;
+  try {
+    await apiRequest(`/api/words/${word.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ starred: !Boolean(word.starred) }),
+    });
+    await loadWords(ctx);
+    // Если профиль открыт — обновим список избранного.
+    ctx.profile?.refresh?.();
+  } catch (error) {
+    setStatus(elements.formStatus, error?.message || "Failed to update");
+  }
+}
+
 function startEdit({ state, elements }, word) {
   state.editingId = word.id;
   elements.formTitle.textContent = "Edit word";
@@ -61,6 +76,15 @@ export function renderWords(ctx, words) {
     const actionsWrap = document.createElement("div");
     actionsWrap.className = "actions";
 
+    const starBtn = document.createElement("button");
+    starBtn.className = "star-btn";
+    starBtn.type = "button";
+    starBtn.textContent = word.starred ? "★" : "☆";
+    starBtn.title = word.starred ? "Unstar" : "Star";
+    starBtn.setAttribute("aria-label", starBtn.title);
+    starBtn.dataset.starred = word.starred ? "1" : "0";
+    starBtn.addEventListener("click", () => toggleStar(ctx, word));
+
     const editBtn = document.createElement("button");
     editBtn.className = "ghost";
     editBtn.type = "button";
@@ -82,6 +106,7 @@ export function renderWords(ctx, words) {
       }
     });
 
+    actionsWrap.appendChild(starBtn);
     actionsWrap.appendChild(editBtn);
     actionsWrap.appendChild(deleteBtn);
     actions.appendChild(actionsWrap);
@@ -105,6 +130,8 @@ export async function loadWords(ctx) {
   const params = new URLSearchParams();
   if (q) params.append("q", q);
   if (tag) params.append("tag", tag);
+  const starredOnly = Boolean(elements.starredFilter?.checked);
+  if (starredOnly) params.append("starred", "true");
   const query = params.toString();
   const path = query ? `/api/words?${query}` : "/api/words";
   setStatus(elements.searchStatus, "Loading...");

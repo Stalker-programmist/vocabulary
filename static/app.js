@@ -13,6 +13,7 @@ import { initConfirmModal } from "./js/modal.js";
 import { createState } from "./js/state.js";
 import { loadStats } from "./js/stats.js";
 import { initStatsChart } from "./js/charts.js";
+import { initProfile } from "./js/profile.js";
 import { initTraining } from "./js/training.js";
 import { switchSection } from "./js/tabs.js";
 import { initToasts } from "./js/toast.js";
@@ -103,19 +104,27 @@ async function exportCsv(ctx) {
 function startApp(ctx) {
   loadWords(ctx);
   loadStats(ctx);
-  initStatsChart(ctx);
+  ctx.statsChart = initStatsChart(ctx);
 }
 
 function bindUI(ctx) {
   const { elements } = ctx;
 
   const training = initTraining(ctx);
+  const profile = initProfile(ctx);
+  ctx.profile = profile;
 
   elements.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       switchSection(ctx, tab.dataset.section);
       if (tab.dataset.section === "review") {
         if (ctx.state.isAuthed) training.refreshThemes();
+      }
+      if (tab.dataset.section === "profile") {
+        if (ctx.state.isAuthed) profile.refresh();
+      }
+      if (tab.dataset.section === "stats") {
+        ctx.statsChart?.activate?.();
       }
     });
   });
@@ -155,6 +164,7 @@ function bindUI(ctx) {
   elements.cancelEdit.addEventListener("click", () => resetForm(ctx));
   elements.refreshWords.addEventListener("click", () => loadWords(ctx));
   elements.refreshStats.addEventListener("click", () => loadStats(ctx));
+  elements.refreshProfile?.addEventListener("click", () => profile.refresh());
 
   elements.importCsv?.addEventListener("click", () => importCsv(ctx));
   elements.exportCsv?.addEventListener("click", () => exportCsv(ctx));
@@ -200,6 +210,7 @@ function bindUI(ctx) {
   });
 
   elements.tagFilter.addEventListener("input", runSearch);
+  elements.starredFilter?.addEventListener("change", runSearch);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

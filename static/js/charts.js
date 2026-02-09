@@ -9,6 +9,7 @@ const COLORS = {
 };
 
 let chartReady = false;
+let chartController = null;
 
 function setupCanvas(canvas) {
   const rect = canvas.getBoundingClientRect();
@@ -101,7 +102,7 @@ function drawBars(ctx, data, width, height, padding) {
 }
 
 function formatTooltip(label, words, reviews) {
-  return `${label}\nНовые: ${words}\nПовторы: ${reviews}`;
+  return `${label}\nNew: ${words}\nReviews: ${reviews}`;
 }
 
 function updateTooltip(tooltip, content, x, y) {
@@ -119,12 +120,13 @@ function hideTooltip(tooltip) {
 export function initStatsChart({ elements }) {
   const canvas = elements.statsChart;
   if (!canvas) return;
-  if (chartReady) return;
+  if (chartReady && chartController) return chartController;
   chartReady = true;
   const tooltip = elements.statsTooltip;
   let currentRange = "7d";
   let latestData = null;
   let chartMeta = null;
+  let pendingRedraw = false;
 
   async function load(range) {
     currentRange = range;
@@ -147,11 +149,27 @@ export function initStatsChart({ elements }) {
 
   function redraw() {
     if (!latestData) return;
+    // Если секция скрыта, canvas может иметь нулевой размер — ждём отображения.
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+      if (pendingRedraw) return;
+      pendingRedraw = true;
+      requestAnimationFrame(() => {
+        pendingRedraw = false;
+        redraw();
+      });
+      return;
+    }
     const { ctx, width, height } = setupCanvas(canvas);
     ctx.clearRect(0, 0, width, height);
     const padding = { top: 20, right: 16, bottom: 28, left: 42 };
     chartMeta = drawBars(ctx, latestData, width, height, padding);
     canvas.dataset.range = currentRange;
+  }
+
+  function activate() {
+    // Даём браузеру обновить layout после переключения вкладки.
+    requestAnimationFrame(() => redraw());
   }
 
   function onMove(event) {
@@ -193,4 +211,7 @@ export function initStatsChart({ elements }) {
   );
   if (defaultButton) defaultButton.classList.add("is-active");
   load(currentRange);
+
+  chartController = { load, redraw, activate };
+  return chartController;
 }

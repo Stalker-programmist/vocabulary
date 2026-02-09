@@ -27,6 +27,7 @@
         <button class="tab is-active" data-section="words" type="button">Words</button>
         <button class="tab" data-section="review" type="button">Training mode</button>
         <button class="tab" data-section="stats" type="button">Stats</button>
+        <button class="tab" data-section="profile" type="button">Profile</button>
       </nav>
       <div class="auth-bar" aria-label="Account">
         <span class="auth-status" id="auth-status">Not signed in</span>
@@ -102,6 +103,10 @@
               <label>
                 <span>Tag</span>
                 <input id="tag-filter" type="text" placeholder="food" />
+              </label>
+              <label class="check-row">
+                <input id="starred-filter" type="checkbox" />
+                <span>Starred only</span>
               </label>
               <div class="status" id="search-status" role="status"></div>
             </div>
@@ -414,6 +419,76 @@
           <div class="stat-card" style="--delay: 0.5s;">
             <h3>Reviews (365d)</h3>
             <div class="stat-value" id="stat-reviews-365d">0</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="profile" class="section">
+        <div class="section-head">
+          <div>
+            <h2>Profile</h2>
+            <p>Account details and your favourite words.</p>
+          </div>
+          <div class="section-actions">
+            <button class="ghost" id="refresh-profile" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card" style="--delay: 0.05s;" data-card-id="profile-account">
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Account</h3>
+                  <p id="profile-email">—</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
+            </div>
+            <div class="profile-meta">
+              <div class="profile-meta-row">
+                <span class="profile-meta-label">Member since</span>
+                <span class="profile-meta-value" id="profile-created-at">—</span>
+              </div>
+              <div class="profile-meta-row">
+                <span class="profile-meta-label">Total words</span>
+                <span class="profile-meta-value" id="profile-total-words">0</span>
+              </div>
+              <div class="profile-meta-row">
+                <span class="profile-meta-label">Starred words</span>
+                <span class="profile-meta-value" id="profile-starred-words">0</span>
+              </div>
+              <div class="profile-meta-row">
+                <span class="profile-meta-label">Due today</span>
+                <span class="profile-meta-value" id="profile-due-today">0</span>
+              </div>
+              <div class="status" id="profile-status" role="status"></div>
+            </div>
+          </div>
+
+          <div class="card table-card" style="--delay: 0.1s;" data-card-id="profile-favourites">
+            <div class="card-head">
+              <div class="card-head-row">
+                <div>
+                  <h3>Starred</h3>
+                  <p id="profile-starred-count">No favourites yet.</p>
+                </div>
+                <button class="drag-handle" type="button" draggable="true" aria-label="Move card" title="Drag to move"></button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Term</th>
+                    <th>Translation</th>
+                    <th>Tags</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="profile-starred-body"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

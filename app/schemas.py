@@ -36,6 +36,7 @@ class WordCreate(SQLModel):
     translation: str
     example: Optional[str] = None
     tags: Optional[str] = None
+    starred: bool = False
 
 
 class WordUpdate(SQLModel):
@@ -43,6 +44,7 @@ class WordUpdate(SQLModel):
     translation: Optional[str] = None
     example: Optional[str] = None
     tags: Optional[str] = None
+    starred: Optional[bool] = None
 
 
 class ReviewResult(SQLModel):
@@ -71,3 +73,15 @@ class ThemeOut(SQLModel):
 class EnsureExamplesIn(SQLModel):
     word_ids: list[int]
     force: bool = False
+
+
+class ProfileOut(SQLModel):
+    total_words: int
+    starred_words: int
+    due_today: int
+
+
+class StatsSeriesOut(SQLModel):
+    labels: list[str]
+    new_words: list[int]
+    reviews: list[int]

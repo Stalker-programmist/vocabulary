@@ -22,6 +22,7 @@ class Word(SQLModel, table=True):
     example: Optional[str] = None
     tags: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
+    starred: bool = Field(default=False, index=True)
     stage: int = Field(default=0)
     next_review: date = Field(default_factory=date.today)
 

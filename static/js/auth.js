@@ -40,6 +40,7 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
       el.cancelEdit,
       el.searchInput,
       el.tagFilter,
+      el.starredFilter,
       el.wordlistSearchInput,
       el.wordlistClearSearch,
       el.importFile,
@@ -47,6 +48,7 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
       el.importCsv,
       el.exportCsv,
       el.refreshStats,
+      el.refreshProfile,
       el.trainingTheme,
       el.trainingStart,
     ].forEach(setDisabled);

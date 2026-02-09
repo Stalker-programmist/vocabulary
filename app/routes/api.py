@@ -5,7 +5,7 @@ import io
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import func
 from sqlmodel import Session, select
@@ -15,8 +15,10 @@ from ..deps import get_current_user, get_session
 from ..models import Review, User, Word
 from ..schemas import (
     EnsureExamplesIn,
+    ProfileOut,
     ReviewResult,
     StatsOut,
+    StatsSeriesOut,
     ThemeOut,
     WordCreate,
     WordUpdate,
@@ -76,6 +78,7 @@ def list_words(
     session: Session = Depends(get_session),
     q: Optional[str] = None,
     tag: Optional[str] = None,
+    starred: Optional[bool] = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[Word]:
@@ -95,6 +98,10 @@ def list_words(
             | (Word.tags.like(f"%,{normalized_tag},%"))
             | (Word.tags.like(f"%,{normalized_tag}"))
         )
+    if starred is True:
+        statement = statement.where(Word.starred.is_(True))
+    elif starred is False:
+        statement = statement.where(Word.starred.is_(False))
     statement = statement.order_by(Word.created_at.desc()).limit(limit).offset(offset)
     return session.exec(statement).all()
 
@@ -113,6 +120,7 @@ def create_word(
         translation=payload.translation.strip(),
         example=payload.example.strip() if payload.example else None,
         tags=normalize_tags(payload.tags),
+        starred=bool(payload.starred),
         stage=0,
         next_review=today,
     )
@@ -143,10 +151,38 @@ def update_word(
         word.example = payload.example.strip() or None
     if payload.tags is not None:
         word.tags = normalize_tags(payload.tags)
+    if payload.starred is not None:
+        word.starred = bool(payload.starred)
     session.add(word)
     session.commit()
     session.refresh(word)
     return word
+
+
+@router.get("/profile", response_model=ProfileOut)
+def profile_summary(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> ProfileOut:
+    today = date.today()
+    total_words = session.exec(
+        select(func.count()).select_from(Word).where(Word.user_id == user.id)
+    ).one()
+    starred_words = session.exec(
+        select(func.count())
+        .select_from(Word)
+        .where(Word.user_id == user.id, Word.starred.is_(True))
+    ).one()
+    due_today = session.exec(
+        select(func.count())
+        .select_from(Word)
+        .where(Word.user_id == user.id, Word.next_review <= today)
+    ).one()
+    return ProfileOut(
+        total_words=total_words,
+        starred_words=starred_words,
+        due_today=due_today,
+    )
 
 
 @router.delete("/words/{word_id}")
@@ -422,3 +458,93 @@ def get_stats(
         reviews_365d=reviews_365d,
         due_next_7d=due_next_7d,
     )
+
+
+@router.get("/stats/series", response_model=StatsSeriesOut)
+def stats_series(
+    range_key: str = Query(default="7d", alias="range"),
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> StatsSeriesOut:
+    """
+    Серии для Activity chart: новые слова vs повторы.
+    Диапазоны: 1d, 7d, 30d, 365d.
+    """
+    now = datetime.now()
+    allowed = {"1d", "7d", "30d", "365d"}
+    if range_key not in allowed:
+        range_key = "7d"
+
+    if range_key == "1d":
+        # Последние 24 часа по часам.
+        end = now.replace(minute=0, second=0, microsecond=0)
+        start = end - timedelta(hours=23)
+        buckets = [start + timedelta(hours=i) for i in range(24)]
+        labels = [dt.strftime("%H:%M") for dt in buckets]
+
+        words_rows = session.exec(
+            select(Word.created_at)
+            .where(Word.user_id == user.id, Word.created_at >= start, Word.created_at <= end + timedelta(hours=1))
+        ).all()
+        reviews_rows = session.exec(
+            select(Review.reviewed_at)
+            .where(Review.user_id == user.id, Review.reviewed_at >= start, Review.reviewed_at <= end + timedelta(hours=1))
+        ).all()
+
+        word_counts: dict[datetime, int] = {dt: 0 for dt in buckets}
+        review_counts: dict[datetime, int] = {dt: 0 for dt in buckets}
+
+        for created_at in words_rows:
+            if not created_at:
+                continue
+            key = created_at.replace(minute=0, second=0, microsecond=0)
+            if key in word_counts:
+                word_counts[key] += 1
+
+        for reviewed_at in reviews_rows:
+            if not reviewed_at:
+                continue
+            key = reviewed_at.replace(minute=0, second=0, microsecond=0)
+            if key in review_counts:
+                review_counts[key] += 1
+
+        new_words = [word_counts[dt] for dt in buckets]
+        reviews = [review_counts[dt] for dt in buckets]
+        return StatsSeriesOut(labels=labels, new_words=new_words, reviews=reviews)
+
+    days = int(range_key[:-1])
+    start_day = date.today() - timedelta(days=days - 1)
+    start_dt = datetime.combine(start_day, datetime.min.time())
+    end_dt = datetime.combine(date.today(), datetime.max.time())
+    bucket_days = [start_day + timedelta(days=i) for i in range(days)]
+    labels = [d.strftime("%b %d") for d in bucket_days]
+
+    words_rows = session.exec(
+        select(Word.created_at)
+        .where(Word.user_id == user.id, Word.created_at >= start_dt, Word.created_at <= end_dt)
+    ).all()
+    reviews_rows = session.exec(
+        select(Review.reviewed_at)
+        .where(Review.user_id == user.id, Review.reviewed_at >= start_dt, Review.reviewed_at <= end_dt)
+    ).all()
+
+    word_counts_day: dict[date, int] = {d: 0 for d in bucket_days}
+    review_counts_day: dict[date, int] = {d: 0 for d in bucket_days}
+
+    for created_at in words_rows:
+        if not created_at:
+            continue
+        key = created_at.date()
+        if key in word_counts_day:
+            word_counts_day[key] += 1
+
+    for reviewed_at in reviews_rows:
+        if not reviewed_at:
+            continue
+        key = reviewed_at.date()
+        if key in review_counts_day:
+            review_counts_day[key] += 1
+
+    new_words = [word_counts_day[d] for d in bucket_days]
+    reviews = [review_counts_day[d] for d in bucket_days]
+    return StatsSeriesOut(labels=labels, new_words=new_words, reviews=reviews)

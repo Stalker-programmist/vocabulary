@@ -33,6 +33,16 @@ def migrate_db() -> None:
             conn.exec_driver_sql(
                 "CREATE INDEX IF NOT EXISTS ix_word_user_id ON word(user_id)"
             )
+            if "starred" not in column_names:
+                conn.exec_driver_sql(
+                    "ALTER TABLE word ADD COLUMN starred INTEGER NOT NULL DEFAULT 0"
+                )
+            conn.exec_driver_sql(
+                "CREATE INDEX IF NOT EXISTS ix_word_starred ON word(starred)"
+            )
+            conn.exec_driver_sql(
+                "CREATE INDEX IF NOT EXISTS ix_word_user_id_starred ON word(user_id, starred)"
+            )
 
         if "review" in tables:
             columns = conn.exec_driver_sql("PRAGMA table_info(review)").fetchall()
