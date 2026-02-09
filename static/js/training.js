@@ -79,16 +79,45 @@ function escapeRegExp(text) {
   return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function buildBlankExample(example, term) {
+function blankOutTerm(example, term) {
   const src = String(example || "").trim();
   const needle = String(term || "").trim();
   if (!src || !needle) return null;
 
-  const escaped = escapeRegExp(needle);
-  const regex = new RegExp(`\\b${escaped}\\b`, "i");
-  if (!regex.test(src)) return null;
+  // Более устойчивое совпадение, чем \\b:
+  // - \\b в JS плохо работает с нелатиницей
+  // - термины могут быть фразами, с дефисами и т.п.
+  const srcLower = src.toLowerCase();
+  const needleLower = needle.toLowerCase();
+  let idx = srcLower.indexOf(needleLower);
+  if (idx >= 0) {
+    return `${src.slice(0, idx)}____${src.slice(idx + needle.length)}`;
+  }
 
-  return src.replace(regex, "____");
+  // Попытка 2: гибкое совпадение пробелов (например, двойные пробелы).
+  const parts = needle.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  const escaped = parts.length > 1 ? parts.join("\\s+") : escapeRegExp(needle);
+  try {
+    const regex = new RegExp(escaped, "iu");
+    const match = regex.exec(src);
+    if (!match) return null;
+    return `${src.slice(0, match.index)}____${src.slice(match.index + match[0].length)}`;
+  } catch {
+    return null;
+  }
+}
+
+function syntheticContext(term) {
+  const clean = String(term || "").trim();
+  if (!clean) return "____";
+  const templates = [
+    `I used ____ in a sentence today.`,
+    `Can you guess the word: ____?`,
+    `My new word for today is ____.`,
+    `Try to remember: ____.`,
+    `In context: ____ is important here.`,
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
 }
 
 function renderWordsTable(ctx, words) {
@@ -705,20 +734,51 @@ export function initTraining(ctx) {
     }
   };
 
-  const startLevel4 = () => {
-    const words = state.training.words;
+  const buildLevel4Candidates = (words) => {
     const candidates = [];
     for (const w of words) {
-      const prompt = buildBlankExample(w.example, w.term);
-      if (!prompt) continue;
       const term = String(w.term || "").trim();
       const translation = String(w.translation || "").trim();
       if (!term || !translation) continue;
+      const prompt = blankOutTerm(w.example, term) || syntheticContext(term);
       candidates.push({ word: w, prompt, term, translation });
     }
+    return candidates;
+  };
 
+  const mergeUpdatedWords = (updatedWords) => {
+    const byId = new Map(updatedWords.map((w) => [String(w.id), w]));
+    state.training.words = state.training.words.map((w) => {
+      const updated = byId.get(String(w.id));
+      return updated ? { ...w, ...updated } : w;
+    });
+  };
+
+  const startLevel4 = async () => {
+    const words = state.training.words;
+
+    // Генерация примеров больше не является обязательной для Level 4,
+    // но мы всё равно можем догенерировать их для будущих сессий.
+    const missing = words.filter((w) => !String(w.example || "").trim());
+    const toGenerate = sample(missing, 24).map((w) => Number(w.id)).filter(Boolean);
+    if (toGenerate.length) {
+      try {
+        safeStatus(elements.trainingGameStatus, "Generating examples...");
+        const updated = await apiRequest("/api/words/examples", {
+          method: "POST",
+          body: JSON.stringify({ word_ids: toGenerate }),
+        });
+        if (Array.isArray(updated) && updated.length) {
+          mergeUpdatedWords(updated);
+        }
+      } catch {
+        // Ошибки генерации не блокируют тренировку.
+      }
+    }
+
+    const candidates = buildLevel4Candidates(state.training.words);
     if (candidates.length < 8) {
-      throw new Error("Level 4 needs at least 8 words with examples containing the term.");
+      throw new Error("Level 4 needs at least 8 words in the loaded set.");
     }
 
     const picked = sample(candidates, 8);
@@ -738,6 +798,7 @@ export function initTraining(ctx) {
     setHidden(elements.trainingLevel1Card, true);
     setHidden(elements.trainingLevel2Card, true);
     setHidden(elements.trainingLevel3Card, true);
+    safeStatus(elements.trainingGameStatus, "");
     renderLevel4();
   };
 
@@ -779,7 +840,7 @@ export function initTraining(ctx) {
     loadWordsForTheme();
   });
 
-  elements.trainingRun?.addEventListener("click", () => {
+  elements.trainingRun?.addEventListener("click", async () => {
     try {
       const loaded = state.training.words.length > 0;
       if (!loaded) throw new Error("Load words first.");
@@ -789,7 +850,7 @@ export function initTraining(ctx) {
       if (level === 1) startLevel1();
       else if (level === 2) startLevel2();
       else if (level === 3) startLevel3();
-      else startLevel4();
+      else await startLevel4();
     } catch (error) {
       safeStatus(elements.trainingGameStatus, error?.message || "Failed to start training");
     }
@@ -829,12 +890,12 @@ export function initTraining(ctx) {
 
   elements.trainingL3Check?.addEventListener("click", () => checkLevel3());
 
-  elements.trainingL4New?.addEventListener("click", () => {
+  elements.trainingL4New?.addEventListener("click", async () => {
     try {
       const loaded = state.training.words.length > 0;
       if (!loaded) throw new Error("Load words first.");
       resetGames();
-      startLevel4();
+      await startLevel4();
     } catch (error) {
       safeStatus(elements.trainingGameStatus, error?.message || "Failed to start Level 4");
     }

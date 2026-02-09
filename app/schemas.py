@@ -67,3 +67,7 @@ class ThemeOut(SQLModel):
     tag: str
     count: int
 
+
+class EnsureExamplesIn(SQLModel):
+    word_ids: list[int]
+    force: bool = False

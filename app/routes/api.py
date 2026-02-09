@@ -5,18 +5,48 @@ import io
 from datetime import date, datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import func
 from sqlmodel import Session, select
 
+from ..db import engine
 from ..deps import get_current_user, get_session
 from ..models import Review, User, Word
-from ..schemas import ReviewResult, StatsOut, ThemeOut, WordCreate, WordUpdate
+from ..schemas import (
+    EnsureExamplesIn,
+    ReviewResult,
+    StatsOut,
+    ThemeOut,
+    WordCreate,
+    WordUpdate,
+)
+from ..services.examples import generate_example_sentence
 from ..services.review import MAX_STAGE, next_review_date
 from ..services.tags import normalize_tag, normalize_tags
 
 router = APIRouter(prefix="/api", tags=["api"])
+
+
+def _generate_example_for_word(word_id: int, user_id: int) -> None:
+    """
+    Фоновая задача: генерируем example, если он пустой.
+    Важно: используем отдельную сессию БД, чтобы не зависеть от контекста запроса.
+    """
+    try:
+        with Session(engine) as background_session:
+            word = background_session.get(Word, word_id)
+            if not word or word.user_id != user_id:
+                return
+            if word.example:
+                return
+            word.example = generate_example_sentence(word.term, word.translation)
+            background_session.add(word)
+            background_session.commit()
+    except Exception:
+        # Ошибки генерации не должны ломать основной поток.
+        return
+
 
 @router.get("/themes", response_model=list[ThemeOut])
 def list_themes(
@@ -72,6 +102,7 @@ def list_words(
 @router.post("/words", response_model=Word, status_code=201)
 def create_word(
     payload: WordCreate,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> Word:
@@ -88,6 +119,9 @@ def create_word(
     session.add(word)
     session.commit()
     session.refresh(word)
+    if not word.example:
+        # Генерируем пример лениво — в фоне, чтобы форма "Add word" не тормозила.
+        background_tasks.add_task(_generate_example_for_word, word.id, user.id)
     return word
 
 
@@ -127,6 +161,39 @@ def delete_word(
     session.delete(word)
     session.commit()
     return {"ok": True}
+
+
+@router.post("/words/examples", response_model=list[Word])
+def ensure_word_examples(
+    payload: EnsureExamplesIn,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> list[Word]:
+    """
+    Ленивая генерация примеров: дополняем `example` у слов пользователя.
+    Используется, чтобы тренировки работали, даже если примеры не введены вручную.
+    """
+    ids = list({int(x) for x in (payload.word_ids or []) if int(x) > 0})
+    if not ids:
+        return []
+
+    statement = select(Word).where(Word.user_id == user.id, Word.id.in_(ids))
+    words = session.exec(statement).all()
+
+    changed = False
+    for word in words:
+        if word.example and not payload.force:
+            continue
+        word.example = generate_example_sentence(word.term, word.translation)
+        session.add(word)
+        changed = True
+
+    if changed:
+        session.commit()
+        for word in words:
+            session.refresh(word)
+
+    return words
 
 
 @router.post("/words/import")
