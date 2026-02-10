@@ -313,6 +313,7 @@ def export_words_csv(
     return Response(content, media_type="text/csv; charset=utf-8", headers=headers)
 
 
+
 @router.get("/review/today", response_model=list[Word])
 def review_today(
     limit: int = 50,
@@ -320,8 +321,9 @@ def review_today(
     session: Session = Depends(get_session),
 ) -> list[Word]:
     today = date.today()
+    # TODO: сделать limit на кол-во запросов. Для <= 50 - 3 в секунуду. Для > 50 - 1 в секунду
     statement = (
-        select(Word)
+        select(Word) # Выбрать слово, где id равен указанному и слово актуальное, остортировать по актуальности (первый приоритет) и по стадии (второй приоритет),
         .where(Word.user_id == user.id, Word.next_review <= today)
         .order_by(Word.next_review, Word.stage)
         .limit(limit)
