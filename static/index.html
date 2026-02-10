@@ -354,31 +354,6 @@
             <button class="ghost" id="refresh-stats" type="button">Refresh</button>
           </div>
         </div>
-        <div class="card chart-card" style="--delay: 0.02s;">
-          <div class="card-head">
-            <div class="card-head-row">
-              <div>
-                <h3>Activity chart</h3>
-                <p>Compare new words vs reviews across time.</p>
-              </div>
-              <div class="chart-controls">
-                <button class="ghost" data-stats-range="1d" type="button">Day</button>
-                <button class="ghost" data-stats-range="7d" type="button">Week</button>
-                <button class="ghost" data-stats-range="30d" type="button">Month</button>
-                <button class="ghost" data-stats-range="365d" type="button">Year</button>
-              </div>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="stats-chart" height="220" aria-label="Stats chart"></canvas>
-            <div class="chart-legend">
-              <span class="legend-item legend-words">New words</span>
-              <span class="legend-item legend-reviews">Reviews</span>
-            </div>
-            <div class="chart-tooltip" id="stats-tooltip" data-visible="false"></div>
-          </div>
-          <div class="status" id="stats-chart-status" role="status"></div>
-        </div>
         <div class="stats-grid">
           <div class="stat-card" style="--delay: 0.05s;">
             <h3>Due today</h3>
@@ -420,6 +395,61 @@
             <h3>Reviews (365d)</h3>
             <div class="stat-value" id="stat-reviews-365d">0</div>
           </div>
+        </div>
+
+        <div class="card chart-card activity-card" style="--delay: 0.02s;">
+          <div class="card-head">
+            <div class="card-head-row">
+              <div>
+                <h3>Activity chart</h3>
+                <p>Compare new words vs reviews across time.</p>
+              </div>
+              <div class="chart-controls">
+                <button class="ghost" data-stats-range="1d" type="button">Day</button>
+                <button class="ghost" data-stats-range="7d" type="button">Week</button>
+                <button class="ghost" data-stats-range="30d" type="button">Month</button>
+                <button class="ghost" data-stats-range="365d" type="button">Year</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="stats-chart" height="220" aria-label="Stats chart"></canvas>
+            <div class="chart-legend">
+              <span class="legend-item legend-words">New words</span>
+              <span class="legend-item legend-reviews">Reviews</span>
+            </div>
+            <div class="chart-tooltip" id="stats-tooltip" data-visible="false"></div>
+          </div>
+          <div class="status" id="stats-chart-status" role="status"></div>
+        </div>
+
+        <div class="card table-card leaderboard-card" style="--delay: 0.55s;">
+          <div class="card-head">
+            <div class="card-head-row">
+              <div>
+                <h3>Leaderboard</h3>
+                <p>Top learners by words mastered.</p>
+              </div>
+              <div class="chart-controls">
+                <button class="ghost" data-leaderboard-range="7d" type="button">Week</button>
+                <button class="ghost" data-leaderboard-range="30d" type="button">Month</button>
+                <button class="ghost" data-leaderboard-range="365d" type="button">Year</button>
+                <button class="ghost" data-leaderboard-range="all" type="button">All</button>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Learned words</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+          <div class="status" id="leaderboard-status" role="status"></div>
         </div>
       </section>
 

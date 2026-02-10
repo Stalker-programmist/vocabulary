@@ -56,6 +56,12 @@ export function initAuthUI(ctx, { onAuthed } = {}) {
     if (el.statsRangeButtons && typeof el.statsRangeButtons.forEach === "function") {
       el.statsRangeButtons.forEach(setDisabled);
     }
+    if (
+      el.leaderboardRangeButtons &&
+      typeof el.leaderboardRangeButtons.forEach === "function"
+    ) {
+      el.leaderboardRangeButtons.forEach(setDisabled);
+    }
   };
 
   const emitAuthChanged = () => {

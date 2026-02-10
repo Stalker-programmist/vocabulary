@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timedelta
+
 from sqlalchemy import text
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import SQLModel, Session, create_engine, select
 
 DATABASE_URL = "sqlite:///./vocabulary.db"
 
@@ -43,6 +45,11 @@ def migrate_db() -> None:
             conn.exec_driver_sql(
                 "CREATE INDEX IF NOT EXISTS ix_word_user_id_starred ON word(user_id, starred)"
             )
+            if "mastered_at" not in column_names:
+                conn.exec_driver_sql("ALTER TABLE word ADD COLUMN mastered_at DATETIME")
+            conn.exec_driver_sql(
+                "CREATE INDEX IF NOT EXISTS ix_word_mastered_at ON word(mastered_at)"
+            )
 
         if "review" in tables:
             columns = conn.exec_driver_sql("PRAGMA table_info(review)").fetchall()
@@ -71,3 +78,69 @@ def claim_legacy_words_for_user(user_id: int) -> None:
 def init_db() -> None:
     migrate_db()
     SQLModel.metadata.create_all(engine)
+    seed_demo_data()
+
+
+def seed_demo_data() -> None:
+    """
+    Добавляем тестовых пользователей и слова для демо (однократно).
+    - user_top20: 20 слов выучено
+    - user_top5: 5 слов выучено
+    """
+    from .models import User, Word  # локальный импорт, чтобы избежать циклов
+    from .security import hash_password
+    from .services.review import MAX_STAGE
+
+    now = datetime.now()
+    today = date.today()
+
+    demo_users = [
+        ("top20@wordflow.local", 20),
+        ("top5@wordflow.local", 5),
+    ]
+
+    with Session(engine) as session:
+        existing = {
+            user.email
+            for user in session.exec(
+                select(User).where(User.email.in_([email for email, _ in demo_users]))
+            ).all()
+        }
+
+        for email, learned_count in demo_users:
+            if email in existing:
+                continue
+
+            user = User(email=email, password_hash=hash_password("test1234"))
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+
+            words: list[Word] = []
+            for i in range(learned_count):
+                # Распределяем даты освоения по неделе/месяцу/году.
+                if i < max(1, learned_count // 2):
+                    mastered_at = now - timedelta(days=(i % 6))  # в пределах недели
+                elif i < max(2, (learned_count * 3) // 4):
+                    mastered_at = now - timedelta(days=10 + (i % 15))  # в пределах месяца
+                else:
+                    mastered_at = now - timedelta(days=60 + (i % 200))  # в пределах года
+
+                term = f"demo_{user.id}_{i+1}"
+                translation = f"meaning_{i+1}"
+                words.append(
+                    Word(
+                        user_id=user.id,
+                        term=term,
+                        translation=translation,
+                        example=None,
+                        tags="demo",
+                        starred=False,
+                        stage=MAX_STAGE,
+                        next_review=today,
+                        mastered_at=mastered_at,
+                    )
+                )
+
+            session.add_all(words)
+            session.commit()

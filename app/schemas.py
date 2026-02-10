@@ -85,3 +85,8 @@ class StatsSeriesOut(SQLModel):
     labels: list[str]
     new_words: list[int]
     reviews: list[int]
+
+
+class LeaderboardEntryOut(SQLModel):
+    user: str
+    learned_words: int

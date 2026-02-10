@@ -13,6 +13,7 @@ import { initConfirmModal } from "./js/modal.js";
 import { createState } from "./js/state.js";
 import { loadStats } from "./js/stats.js";
 import { initStatsChart } from "./js/charts.js";
+import { initLeaderboard } from "./js/leaderboard.js";
 import { initProfile } from "./js/profile.js";
 import { initTraining } from "./js/training.js";
 import { switchSection } from "./js/tabs.js";
@@ -105,6 +106,7 @@ function startApp(ctx) {
   loadWords(ctx);
   loadStats(ctx);
   ctx.statsChart = initStatsChart(ctx);
+  ctx.leaderboard?.refresh?.();
 }
 
 function bindUI(ctx) {
@@ -112,7 +114,9 @@ function bindUI(ctx) {
 
   const training = initTraining(ctx);
   const profile = initProfile(ctx);
+  const leaderboard = initLeaderboard(ctx);
   ctx.profile = profile;
+  ctx.leaderboard = leaderboard;
 
   elements.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
@@ -125,6 +129,7 @@ function bindUI(ctx) {
       }
       if (tab.dataset.section === "stats") {
         ctx.statsChart?.activate?.();
+        ctx.leaderboard?.refresh?.();
       }
     });
   });
@@ -163,7 +168,10 @@ function bindUI(ctx) {
 
   elements.cancelEdit.addEventListener("click", () => resetForm(ctx));
   elements.refreshWords.addEventListener("click", () => loadWords(ctx));
-  elements.refreshStats.addEventListener("click", () => loadStats(ctx));
+  elements.refreshStats.addEventListener("click", () => {
+    loadStats(ctx);
+    leaderboard.refresh();
+  });
   elements.refreshProfile?.addEventListener("click", () => profile.refresh());
 
   elements.importCsv?.addEventListener("click", () => importCsv(ctx));

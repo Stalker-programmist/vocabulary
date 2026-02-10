@@ -7,7 +7,7 @@ from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
-from sqlalchemy import func
+from sqlalchemy import and_, case, desc, func
 from sqlmodel import Session, select
 
 from ..db import engine
@@ -15,6 +15,7 @@ from ..deps import get_current_user, get_session
 from ..models import Review, User, Word
 from ..schemas import (
     EnsureExamplesIn,
+    LeaderboardEntryOut,
     ProfileOut,
     ReviewResult,
     StatsOut,
@@ -345,6 +346,9 @@ def review_word(
 
     if result == "good":
         word.stage = min(word.stage + 1, MAX_STAGE)
+        if word.stage == MAX_STAGE:
+            # Считаем слово «выученным» в момент достижения максимального stage.
+            word.mastered_at = datetime.now()
         word.next_review = next_review_date(word.stage, today)
         result_bool = True
     else:
@@ -548,3 +552,64 @@ def stats_series(
     new_words = [word_counts_day[d] for d in bucket_days]
     reviews = [review_counts_day[d] for d in bucket_days]
     return StatsSeriesOut(labels=labels, new_words=new_words, reviews=reviews)
+
+
+def _mask_email(email: str) -> str:
+    """
+    Маскируем email для публичного рейтинга, чтобы не светить полный адрес.
+    """
+    value = (email or "").strip()
+    if "@" not in value:
+        return "User"
+    local, domain = value.split("@", 1)
+    local = local.strip()
+    domain = domain.strip()
+    if not local:
+        return f"*@{domain}" if domain else "User"
+    if len(local) <= 2:
+        return f"{local[0]}***@{domain}" if domain else f"{local[0]}***"
+    return f"{local[0]}***{local[-1]}@{domain}" if domain else f"{local[0]}***{local[-1]}"
+
+
+@router.get("/leaderboard", response_model=list[LeaderboardEntryOut])
+def leaderboard(
+    limit: int = 10,
+    range_key: str = Query(default="7d", alias="range"),
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> list[LeaderboardEntryOut]:
+    """
+    Рейтинг пользователей: кто больше слов "выучил" (stage == MAX_STAGE).
+    """
+    safe_limit = max(1, min(int(limit or 10), 50))
+    allowed = {"7d", "30d", "365d", "all"}
+    if range_key not in allowed:
+        range_key = "7d"
+
+    start_dt: Optional[datetime] = None
+    if range_key != "all":
+        days = int(range_key[:-1])
+        start_dt = datetime.now() - timedelta(days=days)
+
+    conditions = [Word.stage == MAX_STAGE]
+    if start_dt is not None:
+        conditions.append(Word.mastered_at.is_not(None))
+        conditions.append(Word.mastered_at >= start_dt)
+
+    learned_count = func.coalesce(
+        func.sum(case((and_(*conditions), 1), else_=0)),
+        0,
+    ).label("learned_words")
+
+    rows = session.exec(
+        select(User.email, learned_count)
+        .join(Word, Word.user_id == User.id, isouter=True)
+        .group_by(User.id)
+        .order_by(desc(learned_count), User.email)
+        .limit(safe_limit)
+    ).all()
+
+    return [
+        LeaderboardEntryOut(user=_mask_email(email), learned_words=int(count or 0))
+        for (email, count) in rows
+    ]

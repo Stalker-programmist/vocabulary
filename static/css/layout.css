@@ -63,3 +63,10 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+.leaderboard-card {
+  margin-top: 24px;
+}
+
+.activity-card {
+  margin-top: 24px;
+}
