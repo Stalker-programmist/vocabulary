@@ -581,6 +581,18 @@ def leaderboard(
     """
     Рейтинг пользователей: кто больше слов "выучил" (stage == MAX_STAGE).
     """
+    return _get_leaderboard(session=session, limit=limit, range_key=range_key)
+
+
+def _get_leaderboard(
+    *,
+    session: Session,
+    limit: int = 10,
+    range_key: str = "7d",
+) -> list[LeaderboardEntryOut]:
+    """
+    Внутренняя функция рейтинга (без FastAPI Query/Depends), чтобы её было проще проверять.
+    """
     safe_limit = max(1, min(int(limit or 10), 50))
     allowed = {"7d", "30d", "365d", "all"}
     if range_key not in allowed:
