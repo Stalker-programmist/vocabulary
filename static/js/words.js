@@ -123,8 +123,31 @@ export function renderWords(ctx, words) {
   });
 }
 
-export async function loadWords(ctx) {
+function updatePagingUI(ctx, totalLoaded) {
   const { state, elements } = ctx;
+  const paging = state.wordsPaging;
+
+  if (elements.wordlistPrev) elements.wordlistPrev.disabled = !paging.hasPrev;
+  if (elements.wordlistNext) elements.wordlistNext.disabled = !paging.hasNext;
+
+  if (elements.wordlistPageInfo) {
+    if (!totalLoaded) {
+      elements.wordlistPageInfo.textContent = "0";
+      return;
+    }
+    const start = paging.offset + 1;
+    const end = paging.offset + Math.min(paging.pageSize, totalLoaded);
+    elements.wordlistPageInfo.textContent = `${start}–${end}`;
+  }
+}
+
+function buildQueryKey({ q, tag, starredOnly, pageSize }) {
+  return JSON.stringify({ q, tag, starredOnly, pageSize });
+}
+
+export async function loadWords(ctx, { resetOffset = false } = {}) {
+  const { state, elements } = ctx;
+  const paging = state.wordsPaging;
   const q = elements.searchInput.value.trim();
   const tag = elements.tagFilter.value.trim();
   const params = new URLSearchParams();
@@ -132,14 +155,31 @@ export async function loadWords(ctx) {
   if (tag) params.append("tag", tag);
   const starredOnly = Boolean(elements.starredFilter?.checked);
   if (starredOnly) params.append("starred", "true");
+  const pageSize = Number(elements.wordlistPageSize?.value || paging.pageSize || 10);
+  paging.pageSize = [5, 10, 15, 20].includes(pageSize) ? pageSize : 10;
+
+  const key = buildQueryKey({ q, tag, starredOnly, pageSize: paging.pageSize });
+  const keyChanged = key !== paging.lastKey;
+  if (resetOffset || keyChanged) paging.offset = 0;
+  paging.lastKey = key;
+
+  const limit = paging.pageSize + 1;
+  params.append("limit", String(limit));
+  params.append("offset", String(paging.offset));
   const query = params.toString();
   const path = query ? `/api/words?${query}` : "/api/words";
   setStatus(elements.searchStatus, "Loading...");
   try {
     const data = await apiRequest(path);
-    state.words = data;
-    renderWords(ctx, data);
-    setStatus(elements.searchStatus, data.length ? "" : "No matches found.");
+    const rows = Array.isArray(data) ? data : [];
+    paging.hasNext = rows.length > paging.pageSize;
+    paging.hasPrev = paging.offset > 0;
+    const pageRows = rows.slice(0, paging.pageSize);
+
+    state.words = pageRows;
+    renderWords(ctx, pageRows);
+    updatePagingUI(ctx, rows.length);
+    setStatus(elements.searchStatus, pageRows.length ? "" : "No matches found.");
   } catch (err) {
     setStatus(elements.searchStatus, err.message || "Load failed");
   }

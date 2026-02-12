@@ -49,7 +49,7 @@
           </div>
         </div>
 
-        <div class="grid">
+        <div class="grid" data-dnd-scope="words-grid">
           <div class="card" style="--delay: 0.05s;" data-card-id="add-word">
             <div class="card-head">
               <div class="card-head-row">
@@ -157,6 +157,18 @@
                   <button class="ghost" id="wordlist-clear-search" type="button">
                     Clear
                   </button>
+                  <label class="wordlist-pagesize" aria-label="Page size">
+                    <span class="sr-only">Page size</span>
+                    <select id="wordlist-page-size">
+                      <option value="5">5</option>
+                      <option value="10" selected>10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                    </select>
+                  </label>
+                  <button class="ghost" id="wordlist-prev" type="button">Prev</button>
+                  <button class="ghost" id="wordlist-next" type="button">Next</button>
+                  <span class="wordlist-pageinfo" id="wordlist-page-info">—</span>
                 </div>
               </div>
             </div>
@@ -188,7 +200,7 @@
           </div>
         </div>
 
-        <div class="grid">
+        <div class="grid" data-dnd-scope="training-grid">
           <div class="card" style="--delay: 0.05s;" data-card-id="training-entry">
             <div class="card-head">
               <div class="card-head-row">
@@ -354,44 +366,54 @@
             <button class="ghost" id="refresh-stats" type="button">Refresh</button>
           </div>
         </div>
-        <div class="stats-grid">
-          <div class="stat-card" style="--delay: 0.05s;">
+        <div class="stats-grid" data-dnd-scope="stats-grid">
+          <div class="stat-card" data-card-id="stat-due-today" style="--delay: 0.05s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Due today</h3>
             <div class="stat-value" id="stat-due-today">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.1s;">
+          <div class="stat-card" data-card-id="stat-due-7d" style="--delay: 0.1s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Due in 7d</h3>
             <div class="stat-value" id="stat-due-7d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.15s;">
+          <div class="stat-card" data-card-id="stat-new-1d" style="--delay: 0.15s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>New words (1d)</h3>
             <div class="stat-value" id="stat-new-1d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.2s;">
+          <div class="stat-card" data-card-id="stat-new-7d" style="--delay: 0.2s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>New words (7d)</h3>
             <div class="stat-value" id="stat-new-7d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.25s;">
+          <div class="stat-card" data-card-id="stat-new-30d" style="--delay: 0.25s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>New words (30d)</h3>
             <div class="stat-value" id="stat-new-30d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.3s;">
+          <div class="stat-card" data-card-id="stat-new-365d" style="--delay: 0.3s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>New words (365d)</h3>
             <div class="stat-value" id="stat-new-365d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.35s;">
+          <div class="stat-card" data-card-id="stat-reviews-1d" style="--delay: 0.35s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Reviews (1d)</h3>
             <div class="stat-value" id="stat-reviews-1d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.4s;">
+          <div class="stat-card" data-card-id="stat-reviews-7d" style="--delay: 0.4s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Reviews (7d)</h3>
             <div class="stat-value" id="stat-reviews-7d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.45s;">
+          <div class="stat-card" data-card-id="stat-reviews-30d" style="--delay: 0.45s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Reviews (30d)</h3>
             <div class="stat-value" id="stat-reviews-30d">0</div>
           </div>
-          <div class="stat-card" style="--delay: 0.5s;">
+          <div class="stat-card" data-card-id="stat-reviews-365d" style="--delay: 0.5s;">
+            <button class="drag-handle" type="button" draggable="true" aria-label="Move tile" title="Drag to move"></button>
             <h3>Reviews (365d)</h3>
             <div class="stat-value" id="stat-reviews-365d">0</div>
           </div>
@@ -464,7 +486,7 @@
           </div>
         </div>
 
-        <div class="grid">
+        <div class="grid" data-dnd-scope="profile-grid">
           <div class="card" style="--delay: 0.05s;" data-card-id="profile-account">
             <div class="card-head">
               <div class="card-head-row">

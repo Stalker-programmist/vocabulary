@@ -103,7 +103,7 @@ async function exportCsv(ctx) {
 }
 
 function startApp(ctx) {
-  loadWords(ctx);
+  loadWords(ctx, { resetOffset: true });
   loadStats(ctx);
   ctx.statsChart = initStatsChart(ctx);
   ctx.leaderboard?.refresh?.();
@@ -184,7 +184,7 @@ function bindUI(ctx) {
     elements.importFileName.textContent = file?.name || "No file chosen";
   });
 
-  const runSearch = debounce(() => loadWords(ctx), 300);
+  const runSearch = debounce(() => loadWords(ctx, { resetOffset: true }), 300);
 
   const syncSearchInputs = (value) => {
     if (elements.searchInput && elements.searchInput.value !== value) {
@@ -214,11 +214,27 @@ function bindUI(ctx) {
 
   elements.wordlistClearSearch?.addEventListener("click", async () => {
     syncSearchInputs("");
-    await loadWords(ctx);
+    await loadWords(ctx, { resetOffset: true });
   });
 
   elements.tagFilter.addEventListener("input", runSearch);
   elements.starredFilter?.addEventListener("change", runSearch);
+
+  elements.wordlistPageSize?.addEventListener("change", () => {
+    loadWords(ctx, { resetOffset: true });
+  });
+
+  elements.wordlistPrev?.addEventListener("click", () => {
+    const paging = ctx.state.wordsPaging;
+    paging.offset = Math.max(0, paging.offset - paging.pageSize);
+    loadWords(ctx);
+  });
+
+  elements.wordlistNext?.addEventListener("click", () => {
+    const paging = ctx.state.wordsPaging;
+    paging.offset = paging.offset + paging.pageSize;
+    loadWords(ctx);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
